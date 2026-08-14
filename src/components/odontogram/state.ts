@@ -58,8 +58,14 @@ export function extractRecordDates(records: ToothRecord[]): string[] {
   return [...days].sort();
 }
 
-function endOfDay(day: string): number {
-  const d = new Date(day);
-  d.setHours(23, 59, 59, 999);
-  return d.getTime();
+/**
+ * Конец суток по UTC — намеренно, а не по локальному времени.
+ * Позиции слайдера строит extractRecordDates по UTC-дате (created_at.slice(0,10)),
+ * поэтому и отсечка обязана считаться в том же календаре. Через setHours отсечка
+ * съезжала на смещение часового пояса: в Ташкенте (UTC+5) конец 14 августа
+ * приходился на 18:59:59Z, и приём, сохранённый после полуночи по местному
+ * времени, пропадал с той самой позиции слайдера, которую сам же и породил.
+ */
+export function endOfDay(day: string): number {
+  return Date.parse(`${day}T23:59:59.999Z`);
 }

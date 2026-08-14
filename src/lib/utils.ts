@@ -57,3 +57,23 @@ export function calcTotal(subtotal: number, discountPercent: number): number {
   const total = subtotal * (1 - Math.min(Math.max(discountPercent, 0), 100) / 100);
   return Math.round(total * 100) / 100;
 }
+
+/**
+ * Скидка приёма в процентах. Врач вводит её либо процентом, либо суммой —
+ * в базе (visits.discount_percent) всегда хранится процент.
+ *
+ * Результат округляется до сотых сразу, а не при записи: иначе total считался бы
+ * от неокруглённого процента, а в базу уходил округлённый, и сохранённые
+ * subtotal / discount_percent / total переставали сходиться между собой.
+ */
+export function resolveDiscountPercent(
+  mode: "percent" | "amount",
+  raw: string,
+  subtotal: number
+): number {
+  const value = parseFloat(raw) || 0;
+  const percent =
+    mode === "percent" ? value : subtotal > 0 ? (value / subtotal) * 100 : 0;
+  const clamped = Math.min(Math.max(percent, 0), 100);
+  return Math.round(clamped * 100) / 100;
+}

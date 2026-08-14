@@ -23,7 +23,7 @@ import {
   WHOLE_TOOTH_CONDITIONS,
   centerSurface,
 } from "@/lib/constants/teeth";
-import { cn, calcTotal, formatMoney } from "@/lib/utils";
+import { cn, calcTotal, formatMoney, resolveDiscountPercent } from "@/lib/utils";
 import { useToothState } from "@/hooks/useToothState";
 import { Odontogram } from "@/components/odontogram/Odontogram";
 import type { ToothPart } from "@/components/odontogram/types";
@@ -132,12 +132,10 @@ export function NewVisitForm({
     ]);
   }
 
-  const discountPercent = useMemo(() => {
-    const v = parseFloat(discountValue) || 0;
-    if (discountMode === "percent") return Math.min(Math.max(v, 0), 100);
-    if (subtotal <= 0) return 0;
-    return Math.min(Math.max((v / subtotal) * 100, 0), 100);
-  }, [discountMode, discountValue, subtotal]);
+  const discountPercent = useMemo(
+    () => resolveDiscountPercent(discountMode, discountValue, subtotal),
+    [discountMode, discountValue, subtotal]
+  );
 
   const total = useMemo(() => calcTotal(subtotal, discountPercent), [subtotal, discountPercent]);
 
@@ -234,7 +232,7 @@ export function NewVisitForm({
           treatment: treatment.trim() || null,
           recommendation: recommendation.trim() || null,
           subtotal,
-          discount_percent: Math.round(discountPercent * 100) / 100,
+          discount_percent: discountPercent,
           total,
           payment_status: paymentStatus,
           next_visit_date: nextVisitDate || null,

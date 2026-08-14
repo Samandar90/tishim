@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Свежий push отменяет прогон предыдущего коммита той же ветки — кроме main.
+# На main отменять нельзя: там включён автодеплой Render, и отменённый прогон
+# означал бы коммит, уехавший в прод вообще без результата проверок.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  check:
+    name: Типы, линт, тесты
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Версия берётся из engines в package.json — одна точка правды
+          # для CI, Render и локальной разработки.
+          node-version-file: package.json
+          cache: npm
+
+      - name: Установка зависимостей
+        run: npm ci
+
+      - name: Проверка типов
+        run: npm run typecheck
+
+      - name: Линт
+        run: npm run lint
+
+      # Часовой пояс задан и здесь, и в vitest.setup.ts. Дублирование намеренное:
+      # под UTC ошибки со смешением локального и мирового времени не
+      # воспроизводятся, а раннер GitHub всегда UTC.
+      - name: Тесты
+        run: npm test
+        env:
+          TZ: Asia/Tashkent
