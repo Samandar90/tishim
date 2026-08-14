@@ -13,13 +13,11 @@ export default async function DentistHomePage() {
 
   const { data: dentist } = await supabase
     .from("dentists")
-    .select("id, specialization, license_number, clinic_id")
+    .select("id, specialization, license_number, clinic_id, bio, photo_url, experience_years")
     .eq("profile_id", session.profile.id)
     .single();
 
   if (!dentist) return null;
-
-  const needsSetup = !dentist.specialization;
 
   const [{ data: clinics }, { data: accesses }] = await Promise.all([
     supabase.from("clinics").select("id, name").order("name"),
@@ -50,13 +48,12 @@ export default async function DentistHomePage() {
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-slate-900">{t("patientsTitle")}</h1>
 
-      {needsSetup && (
-        <DentistProfileSetup
-          dentistId={dentist.id}
-          clinics={clinics ?? []}
-          initial={dentist}
-        />
-      )}
+      <DentistProfileSetup
+        dentistId={dentist.id}
+        userId={session.user.id}
+        clinics={clinics ?? []}
+        initial={dentist}
+      />
 
       <PatientList patients={patients} />
     </div>
