@@ -22,9 +22,13 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          # Версия берётся из engines в package.json — одна точка правды
-          # для CI, Render и локальной разработки.
-          node-version-file: package.json
+          # Версия закреплена в .nvmrc, а не диапазоном из engines.
+          # engines говорит про минимум (Supabase требует >=22), .nvmrc — про
+          # конкретную версию. Это важнее, чем кажется: node 22 несёт npm 10,
+          # node 24 — npm 11, и они по-разному записывают платформенные пакеты
+          # в package-lock. Один lock под две версии npm не ложится, поэтому
+          # CI, Render и локальная разработка обязаны быть на одной.
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Установка зависимостей
