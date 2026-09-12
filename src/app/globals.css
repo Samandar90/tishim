@@ -48,6 +48,14 @@
     outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
+
+  /* Модальный <dialog> сам скролл документа не блокирует: на телефоне жест по
+     подложке шторки уезжал страницей под ней. И html, и body — старый WebKit
+     игнорирует overflow:hidden только на body. */
+  html:has(dialog[open]),
+  body:has(dialog[open]) {
+    overflow: hidden;
+  }
 }
 
 @layer utilities {

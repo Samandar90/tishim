@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildChartState, endOfDay, extractRecordDates } from "@/components/odontogram/state";
+import {
+  buildChartState,
+  endOfDay,
+  extractRecordDates,
+  recordDay,
+} from "@/components/odontogram/state";
+import { formatDate } from "@/lib/utils";
 import type { ToothRecord } from "@/lib/types/database";
 
 let seq = 0;
@@ -48,6 +54,20 @@ describe("отсечка по дате не зависит от часового
     const next = rec("2026-08-15T00:00:00.000Z");
     expect(buildChartState([edge], "2026-08-14")[16]).toBeDefined();
     expect(buildChartState([next], "2026-08-14")[16]).toBeUndefined();
+  });
+
+  it("дата записи в шторке зуба совпадает с позицией слайдера", () => {
+    // 21:30Z — по Ташкенту уже 02:30 14-го; слайдер ставит запись на 13-е,
+    // и шторка обязана показать то же число, а не локальное
+    const late = rec("2026-08-13T21:30:00Z");
+    const [sliderDay] = extractRecordDates([late]);
+    const chart = buildChartState([late]);
+    const sheetDay = recordDay(chart[16]!.surfaces.O!.recordedAt!);
+
+    expect(sheetDay).toBe(sliderDay);
+    expect(formatDate(sheetDay)).toBe("13.08.2026");
+    // контроль: «наивный» путь через new Date(iso) даёт другой день
+    expect(formatDate(late.created_at)).toBe("14.08.2026");
   });
 
   it("каждая позиция слайдера показывает всё, что было записано в тот день", () => {

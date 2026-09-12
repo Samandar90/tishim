@@ -26,6 +26,8 @@ export interface ToothProps {
   width?: number;
   /** Тёмный фон (hero лендинга) — контуры светлее, чтобы зуб читался. */
   onDark?: boolean;
+  /** Растягивается на ширину родителя (сцена на телефоне); `width` игнорируется. */
+  fluid?: boolean;
 }
 
 const W = 52;
@@ -117,6 +119,7 @@ export const Tooth = memo(function Tooth({
   partLabels,
   width = 52,
   onDark,
+  fluid,
 }: ToothProps) {
   const upper = isUpperTooth(fdi);
   const { polys, center, top, bottom } = crownGeometry(fdi);
@@ -167,9 +170,9 @@ export const Tooth = memo(function Tooth({
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      width={width}
-      height={(width * H) / W}
-      className="select-none overflow-visible"
+      width={fluid ? undefined : width}
+      height={fluid ? undefined : (width * H) / W}
+      className={cn("select-none overflow-visible", fluid && "h-auto w-full")}
       role={interactive ? "group" : "img"}
       aria-label={String(fdi)}
       onMouseLeave={handleLeave}

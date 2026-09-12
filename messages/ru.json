@@ -147,6 +147,27 @@
       "periodontitis": "Периодонтит",
       "extracted": "Удалён",
       "missing": "Отсутствует"
+    },
+    "tapHint": "Нажмите на зуб, чтобы посмотреть подробности",
+    "noRecords": "Записей по этому зубу нет",
+    "prevTooth": "Предыдущий зуб",
+    "nextTooth": "Следующий зуб",
+    "wholeTooth": "весь зуб",
+    "toothNames": {
+      "centralIncisor": "Центральный резец",
+      "lateralIncisor": "Боковой резец",
+      "canine": "Клык",
+      "firstPremolar": "Первый премоляр",
+      "secondPremolar": "Второй премоляр",
+      "firstMolar": "Первый моляр",
+      "secondMolar": "Второй моляр",
+      "thirdMolar": "Зуб мудрости"
+    },
+    "quadrants": {
+      "upperRight": "верхний правый",
+      "upperLeft": "верхний левый",
+      "lowerRight": "нижний правый",
+      "lowerLeft": "нижний левый"
     }
   },
   "dashboard": {

@@ -90,3 +90,49 @@ export function rootCount(fdi: number): number {
 export function centerSurface(fdi: number): "O" | "I" {
   return isFrontTooth(fdi) ? "I" : "O";
 }
+
+export type ToothPositionKey =
+  | "centralIncisor"
+  | "lateralIncisor"
+  | "canine"
+  | "firstPremolar"
+  | "secondPremolar"
+  | "firstMolar"
+  | "secondMolar"
+  | "thirdMolar";
+
+const PERMANENT_POSITIONS: ToothPositionKey[] = [
+  "centralIncisor",
+  "lateralIncisor",
+  "canine",
+  "firstPremolar",
+  "secondPremolar",
+  "firstMolar",
+  "secondMolar",
+  "thirdMolar",
+];
+
+// У молочных нет премоляров: 4 и 5 — сразу моляры.
+const PRIMARY_POSITIONS: ToothPositionKey[] = [
+  "centralIncisor",
+  "lateralIncisor",
+  "canine",
+  "firstMolar",
+  "secondMolar",
+];
+
+/** Анатомическое имя по позиции в квадранте — ключ для i18n `odontogram.toothNames`. */
+export function toothPositionKey(fdi: number): ToothPositionKey {
+  const pos = fdi % 10;
+  const names = quadrant(fdi) >= 5 ? PRIMARY_POSITIONS : PERMANENT_POSITIONS;
+  return names[pos - 1] ?? "centralIncisor";
+}
+
+export type QuadrantKey = "upperRight" | "upperLeft" | "lowerRight" | "lowerLeft";
+
+/** Сторона — с точки зрения пациента, как в FDI: ключ для i18n `odontogram.quadrants`. */
+export function quadrantKey(fdi: number): QuadrantKey {
+  const right = isMesialOnRight(fdi);
+  if (isUpperTooth(fdi)) return right ? "upperRight" : "upperLeft";
+  return right ? "lowerRight" : "lowerLeft";
+}

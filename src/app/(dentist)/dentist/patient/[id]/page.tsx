@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types/database";
 import { formatDate } from "@/lib/utils";
-import { TeethMapCard } from "@/components/patient/TeethMapCard";
+import { TeethScene } from "@/components/odontogram/TeethScene";
 import { VisitCard, type VisitListRow } from "@/components/visit/VisitCard";
 import { SavedVisitToast } from "@/components/visit/SavedVisitToast";
 import { Button } from "@/components/ui/Button";
@@ -62,7 +62,7 @@ export default async function DentistPatientPage({ params }: { params: { id: str
         </Link>
       </Card>
 
-      <TeethMapCard patientId={p.id} />
+      <TeethScene patientId={p.id} />
 
       <div>
         <CardTitle>{t("visitHistory")}</CardTitle>

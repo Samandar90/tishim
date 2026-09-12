@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { useLocale } from "next-intl";
 
 /**
@@ -12,11 +12,14 @@ export function HistorySlider({
   dates,
   value,
   onChange,
+  onDark,
 }: {
   dates: string[];
   /** selected date (YYYY-MM-DD) or null for "now" */
   value: string | null;
   onChange: (date: string | null) => void;
+  /** Тёмная сцена карты зубов. */
+  onDark?: boolean;
 }) {
   const t = useTranslations("odontogram");
   const locale = useLocale();
@@ -39,10 +42,18 @@ export function HistorySlider({
           const i = Number(e.target.value);
           onChange(i >= dates.length ? null : dates[i]);
         }}
-        className="h-11 w-full flex-1 cursor-pointer accent-primary-600"
+        className={cn(
+          "h-11 w-full flex-1 cursor-pointer",
+          onDark ? "accent-primary-400" : "accent-primary-600"
+        )}
         aria-label={t("history")}
       />
-      <span className="w-24 shrink-0 text-right text-sm font-medium text-slate-700">
+      <span
+        className={cn(
+          "w-24 shrink-0 text-right text-sm font-medium tabular-nums",
+          onDark ? "text-slate-200" : "text-slate-700"
+        )}
+      >
         {value === null ? t("now") : formatDate(value, locale)}
       </span>
     </div>

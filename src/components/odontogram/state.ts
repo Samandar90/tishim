@@ -49,11 +49,21 @@ export function buildChartState(records: ToothRecord[], atDate?: string | null):
   return chart;
 }
 
+/**
+ * День записи как YYYY-MM-DD по UTC. Единственное место, где из created_at
+ * делается календарная дата: и позиции слайдера, и даты в шторке зуба обязаны
+ * идти через него, иначе запись под 21:30Z у слайдера будет 13-м, а в шторке
+ * (через локальный new Date) — 14-м.
+ */
+export function recordDay(createdAt: string): string {
+  return createdAt.slice(0, 10);
+}
+
 /** Unique YYYY-MM-DD dates (ascending) on which records exist — for the history slider. */
 export function extractRecordDates(records: ToothRecord[]): string[] {
   const days = new Set<string>();
   for (const r of records) {
-    days.add(r.created_at.slice(0, 10));
+    days.add(recordDay(r.created_at));
   }
   return [...days].sort();
 }

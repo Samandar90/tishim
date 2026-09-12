@@ -73,9 +73,15 @@ const config: Config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        "sheet-up": {
+          from: { opacity: "0", transform: "translateY(24px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "fade-in-up": "fade-in-up 500ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        // шторка: <dialog> из display:none в open перезапускает анимацию сам
+        "sheet-up": "sheet-up 260ms cubic-bezier(0.16, 1, 0.3, 1) both",
       },
     },
   },

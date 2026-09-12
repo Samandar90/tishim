@@ -4,7 +4,7 @@ import { CalendarDays, ClipboardList, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/auth";
 import { formatDate, formatMoney } from "@/lib/utils";
-import { TeethMapCard } from "@/components/patient/TeethMapCard";
+import { TeethScene } from "@/components/odontogram/TeethScene";
 import { MappingRequestForm } from "@/components/landing/MappingRequestForm";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -59,7 +59,7 @@ export default async function DashboardPage() {
   if (!recordsCount) {
     return (
       <div className="space-y-6">
-        <h1 className="text-h1 text-ink">
+        <h1 className="text-h2 text-ink md:text-h1">
           {t("greeting", { name: profile.full_name.split(" ")[0] || profile.full_name })}
         </h1>
         <EmptyState
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-h1 text-ink">
+        <h1 className="text-h2 text-ink md:text-h1">
           {t("greeting", { name: profile.full_name.split(" ")[0] || profile.full_name })}
         </h1>
         <Link
@@ -116,8 +116,8 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* карта зубов — главный элемент экрана */}
-      <TeethMapCard patientId={profile.id} />
+      {/* карта зубов — главный элемент экрана: на телефоне во всю ширину */}
+      <TeethScene patientId={profile.id} />
 
       {/* компактная строка статистики */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

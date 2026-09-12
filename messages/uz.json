@@ -147,6 +147,27 @@
       "periodontitis": "Periodontit",
       "extracted": "Olib tashlangan",
       "missing": "Yo'q"
+    },
+    "tapHint": "Tafsilotlarni ko'rish uchun tishga bosing",
+    "noRecords": "Bu tish bo'yicha yozuvlar yo'q",
+    "prevTooth": "Oldingi tish",
+    "nextTooth": "Keyingi tish",
+    "wholeTooth": "butun tish",
+    "toothNames": {
+      "centralIncisor": "Markaziy kesuvchi tish",
+      "lateralIncisor": "Yon kesuvchi tish",
+      "canine": "Qoziq tish",
+      "firstPremolar": "Birinchi kichik oziq tish",
+      "secondPremolar": "Ikkinchi kichik oziq tish",
+      "firstMolar": "Birinchi katta oziq tish",
+      "secondMolar": "Ikkinchi katta oziq tish",
+      "thirdMolar": "Aql tishi"
+    },
+    "quadrants": {
+      "upperRight": "yuqori o'ng",
+      "upperLeft": "yuqori chap",
+      "lowerRight": "pastki o'ng",
+      "lowerLeft": "pastki chap"
     }
   },
   "dashboard": {
