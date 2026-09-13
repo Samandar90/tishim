@@ -25,7 +25,7 @@ export async function AppShell({
 
   return (
     <div className="min-h-screen bg-surface">
-      <header className="sticky top-0 z-40 border-b border-line bg-card/95 backdrop-blur">
+      <header className="safe-top sticky top-0 z-40 border-b border-line bg-card/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-content items-center justify-between gap-3 px-4 md:px-6">
           <Logo href={homeHref} />
           <div className="flex items-center gap-2">

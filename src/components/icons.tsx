@@ -17,10 +17,14 @@ function Svg({ className, children }: IconProps & { children: React.ReactNode })
   );
 }
 
+/** Контур зуба в viewBox 24×24 — один и тот же в логотипе и в иконках PWA. */
+export const TOOTH_PATH =
+  "M12 5.5C10.5 4 8.5 3 7 3 4.5 3 3 5 3 7.5c0 4 2 6 2.6 9.3.4 2 .9 4.2 2.4 4.2 1.6 0 1.5-2.6 2-4.5.3-1.2 1-2 2-2s1.7.8 2 2c.5 1.9.4 4.5 2 4.5 1.5 0 2-2.2 2.4-4.2C19 13.5 21 11.5 21 7.5 21 5 19.5 3 17 3c-1.5 0-3.5 1-5 2.5Z";
+
 export function ToothIcon({ className }: IconProps) {
   return (
     <Svg className={className}>
-      <path d="M12 5.5C10.5 4 8.5 3 7 3 4.5 3 3 5 3 7.5c0 4 2 6 2.6 9.3.4 2 .9 4.2 2.4 4.2 1.6 0 1.5-2.6 2-4.5.3-1.2 1-2 2-2s1.7.8 2 2c.5 1.9.4 4.5 2 4.5 1.5 0 2-2.2 2.4-4.2C19 13.5 21 11.5 21 7.5 21 5 19.5 3 17 3c-1.5 0-3.5 1-5 2.5Z" />
+      <path d={TOOTH_PATH} />
     </Svg>
   );
 }

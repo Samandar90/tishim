@@ -125,6 +125,20 @@ next-intl **без префикса локали в URL**: язык берётс
 сотых сразу, а не при записи, иначе сохранённые `subtotal / discount_percent / total`
 перестают сходиться между собой.
 
+### PWA
+
+Манифест — [src/app/manifest.ts](src/app/manifest.ts); иконки **генерируются на
+сборке** Satori (`src/app/icon.tsx`, `apple-icon.tsx`) из `TOOTH_PATH` в
+`components/icons.tsx` — растровых иконок в репозитории нет, знак меняется в
+одном месте. Манифест локализуется через cookie `locale` — Next ставит на
+`<link rel=manifest>` `crossorigin=use-credentials`, cookies долетают. Пути
+`manifest.webmanifest`, `icon/*`, `apple-icon` исключены из matcher'а middleware:
+иначе аноним получал на них 307 на `/login`, и установка не предлагалась.
+Service worker'а нет намеренно — приложение целиком под
+RLS-сессией, кэшировать медицинские данные на устройстве нельзя, а для установки
+на домашний экран он не нужен. `viewport-fit=cover` + утилиты `safe-top`/`safe-bottom`
+обязательны: без них в standalone на iPhone шапка уезжает под «чёлку».
+
 ### Бизнес-модель (этап 1)
 
 Один флагманский врач (`dentists.is_featured`, единственность держит частичный

@@ -7,6 +7,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // manifest.webmanifest, icon/*, apple-icon — ресурсы PWA без расширения в URL;
+    // без исключения аноним получал на них 307 на /login, и браузер не предлагал установку.
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon/|apple-icon|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

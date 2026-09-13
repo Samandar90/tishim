@@ -65,6 +65,9 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
   /* Вертикальный ритм секций лендинга: 48px мобайл / 80px десктоп */
   .section-y {
     padding-top: 48px;

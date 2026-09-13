@@ -57,7 +57,7 @@ export default async function LandingPage() {
   return (
     <div className="bg-surface">
       {/* ---------- шапка ---------- */}
-      <header className="absolute inset-x-0 top-0 z-40">
+      <header className="safe-top absolute inset-x-0 top-0 z-40">
         <div className="mx-auto flex h-16 max-w-content items-center justify-between gap-3 px-4 md:px-8">
           <Logo onDark />
           <div className="flex items-center gap-2">
@@ -72,7 +72,8 @@ export default async function LandingPage() {
       </header>
 
       {/* ---------- 1. hero ---------- */}
-      <section className="relative overflow-hidden bg-slate-900 pb-12 pt-24 md:pb-20 md:pt-32">
+      {/* верхний отступ = высота шапки + «чёлка» в standalone-режиме */}
+      <section className="relative overflow-hidden bg-slate-900 pb-12 pt-[calc(6rem+env(safe-area-inset-top))] md:pb-20 md:pt-[calc(8rem+env(safe-area-inset-top))]">
         {/* мягкое бирюзовое свечение вместо стоковых фото */}
         <div
           aria-hidden

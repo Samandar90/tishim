@@ -68,6 +68,14 @@ npm run dev
 | `patient2@tishim.uz` | Пациент: имплант, предстоящий визит, долг |
 | `patient3@tishim.uz` | Пациент с отозванным доступом |
 
+## PWA
+
+Сайт ставится на домашний экран телефона и открывается без адресной строки:
+манифест — `src/app/manifest.ts`, иконки генерируются при сборке из логотипа
+(`src/app/icon.tsx`, `apple-icon.tsx`), offline-режима и service worker'а нет —
+все данные под сессией пользователя. На iPhone: Поделиться → «На экран Домой»;
+на Android Chrome предложит установку сам.
+
 ## Дизайн-система
 
 Токены живут в [tailwind.config.ts](tailwind.config.ts) и [globals.css](src/app/globals.css);

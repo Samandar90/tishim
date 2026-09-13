@@ -8,12 +8,22 @@ const inter = Inter({ subsets: ["latin", "cyrillic"], variable: "--font-inter" }
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
-  return { title: t("title"), description: t("description") };
+  return {
+    title: t("title"),
+    description: t("description"),
+    applicationName: "Tishim",
+    manifest: "/manifest.webmanifest",
+    // iOS: полноэкранный режим с домашнего экрана и своё имя под иконкой
+    appleWebApp: { capable: true, title: "Tishim", statusBarStyle: "default" },
+  };
 }
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Без cover env(safe-area-inset-*) на iPhone равны нулю — и в standalone
+  // шапка уезжала бы под «чёлку», а таб-бар под полоску Home.
+  viewportFit: "cover",
   themeColor: "#0891b2",
 };
 
