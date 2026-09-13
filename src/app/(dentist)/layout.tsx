@@ -38,7 +38,7 @@ export default async function DentistLayout({ children }: { children: React.Reac
     <AppShell
       items={items}
       homeHref="/dentist"
-      userName={profile.full_name}
+      profile={profile}
       roleLabel={t("roleDentist")}
     >
       {children}

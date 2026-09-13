@@ -59,6 +59,8 @@ const config: Config = {
       },
       minHeight: { touch: "44px" },
       minWidth: { touch: "44px" },
+      // высота шторки на телефоне: оставляет видимой сцену под ней
+      maxHeight: { sheet: "85vh" },
       // ширина подобрана так, чтобы вся челюсть (16 зубов) влезала без скролла
       maxWidth: { content: "1280px" },
       spacing: {
@@ -77,11 +79,29 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(24px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "sheet-down": {
+          from: { opacity: "1", transform: "translateY(0)" },
+          to: { opacity: "0", transform: "translateY(24px)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
       },
       animation: {
         "fade-in-up": "fade-in-up 500ms cubic-bezier(0.16, 1, 0.3, 1) both",
         // шторка: <dialog> из display:none в open перезапускает анимацию сам
         "sheet-up": "sheet-up 260ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        // выход шторки; close() зовётся по animationend в useNativeDialog
+        "sheet-down": "sheet-down 200ms cubic-bezier(0.7, 0, 0.84, 0) both",
+        // вход страницы после навигации. Только opacity: transform на корне
+        // страницы сделал бы её containing block для fixed Toast внутри.
+        // backwards, а не both: анимация, «заполняющая» после конца, по Web
+        // Animations действует как will-change и навсегда оставляет корню
+        // страницы отдельный слой и stacking context.
+        "page-in": "fade-in 220ms cubic-bezier(0.16, 1, 0.3, 1) backwards",
+        // спиннер загрузки: задержка, чтобы не мигать на переходах короче 200 мс
+        "fade-in-late": "fade-in 160ms ease-out 200ms backwards",
       },
     },
   },

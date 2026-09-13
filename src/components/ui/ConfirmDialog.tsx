@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "./Button";
+import { useNativeDialog } from "./useNativeDialog";
 
 /**
  * Модальное подтверждение необратимых действий.
@@ -28,14 +28,7 @@ export function ConfirmDialog({
   onCancel: () => void;
 }) {
   const t = useTranslations("common");
-  const ref = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (open && !el.open) el.showModal();
-    if (!open && el.open) el.close();
-  }, [open]);
+  const { ref } = useNativeDialog(open);
 
   return (
     <dialog

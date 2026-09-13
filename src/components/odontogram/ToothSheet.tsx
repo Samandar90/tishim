@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ToothCondition } from "@/lib/types/database";
@@ -11,6 +10,7 @@ import {
   toothPositionKey,
 } from "@/lib/constants/teeth";
 import { cn, formatDate } from "@/lib/utils";
+import { Sheet } from "@/components/ui/Sheet";
 import { recordDay } from "./state";
 import { Tooth } from "./Tooth";
 import type { SurfaceState, ToothPart, ToothState } from "./types";
@@ -48,8 +48,7 @@ function Dot({ condition, className }: { condition: ToothCondition; className?: 
 }
 
 /**
- * Шторка с подробностями по одному зубу. На телефоне выезжает снизу,
- * на десктопе — обычный центрированный диалог. Нативный <dialog>:
+ * Шторка с подробностями по одному зубу — нативный <dialog> через ui/Sheet:
  * фокус-ловушка и Esc бесплатно, стрелки ←/→ листают соседние зубы.
  */
 export function ToothSheet({
@@ -69,16 +68,7 @@ export function ToothSheet({
   const t = useTranslations("odontogram");
   const tc = useTranslations("common");
   const locale = useLocale();
-  const ref = useRef<HTMLDialogElement>(null);
   const open = fdi !== null;
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (open && !el.open) el.showModal();
-    if (!open && el.open) el.close();
-  }, [open]);
-
   const rows = rowsOf(state);
   const main = headline(rows);
   const name =
@@ -90,39 +80,18 @@ export function ToothSheet({
     "flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-300 transition-colors hover:bg-white/10 hover:text-white";
 
   return (
-    <dialog
-      ref={ref}
-      onCancel={(e) => {
-        e.preventDefault();
-        onClose();
-      }}
-      // Chrome может закрыть модальный <dialog> по Esc, не спросив cancel
-      // (close watcher без user activation) — синхронизируем состояние и тут.
+    <Sheet
+      open={open}
       onClose={onClose}
-      // клик по подложке: padding у диалога нулевой, содержимое закрывает весь бокс
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      tone="dark"
+      label={fdi !== null ? `${fdi} · ${name}` : undefined}
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") onPrev();
         if (e.key === "ArrowRight") onNext();
       }}
-      aria-label={fdi !== null ? `${fdi} · ${name}` : undefined}
-      // Прижат к низу явно (top:auto; bottom:0), а не через margin-top:auto:
-      // у модального <dialog> с UA-стилем inset-block:0 auto-margin в Chrome
-      // не отдаёт всё свободное место, и шторка повисала у верхнего края.
-      className={cn(
-        "bottom-0 top-auto m-0 max-h-[85vh] w-full max-w-full overflow-y-auto overscroll-contain rounded-t-3xl border-t border-white/10 bg-slate-900 p-0 text-white shadow-modal",
-        "backdrop:bg-slate-950/60 backdrop:backdrop-blur-sm",
-        "sm:inset-0 sm:m-auto sm:max-w-md sm:rounded-2xl sm:border",
-        "animate-sheet-up"
-      )}
     >
       {fdi !== null && (
-        <div className="px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 sm:p-6">
-          {/* ручка шторки — только на телефоне */}
-          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20 sm:hidden" />
-
+        <>
           <header className="flex items-center gap-1">
             <button type="button" onClick={onPrev} aria-label={t("prevTooth")} className={navButton}>
               <ChevronLeft className="size-5" />
@@ -182,8 +151,8 @@ export function ToothSheet({
               ))}
             </ul>
           )}
-        </div>
+        </>
       )}
-    </dialog>
+    </Sheet>
   );
 }

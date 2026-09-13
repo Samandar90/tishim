@@ -1,23 +1,26 @@
 import { getTranslations } from "next-intl/server";
+import type { Profile } from "@/lib/types/database";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { LogoutButton } from "./LogoutButton";
 import { Logo } from "./Logo";
 import { BottomTabs, Sidebar, type NavItem } from "./NavTabs";
+import { ProfileSheet } from "./ProfileSheet";
 
 /**
- * Единый каркас кабинетов: на десктопе — боковое меню,
- * на мобильном — нижняя таб-панель. Шапка одна и та же.
+ * Единый каркас кабинетов. Десктоп: боковое меню, в шапке имя, язык и выход.
+ * Телефон: нижняя таб-панель, в шапке только логотип и «Профиль» — шторка
+ * с языком и выходом.
  */
 export async function AppShell({
   items,
   homeHref,
-  userName,
+  profile,
   roleLabel,
   children,
 }: {
   items: NavItem[];
   homeHref: string;
-  userName?: string;
+  profile: Pick<Profile, "full_name" | "phone">;
   roleLabel?: string;
   children: React.ReactNode;
 }) {
@@ -29,16 +32,21 @@ export async function AppShell({
         <div className="mx-auto flex h-16 max-w-content items-center justify-between gap-3 px-4 md:px-6">
           <Logo href={homeHref} />
           <div className="flex items-center gap-2">
-            {userName && (
-              <span className="hidden text-right lg:block">
-                <span className="block max-w-[200px] truncate text-body font-medium text-ink">
-                  {userName}
+            {/* Десктопный кластер скрыт CSS, а не пропущен в рендере: сервер и
+                клиент отдают одно дерево, matchMedia дал бы расхождение гидрации. */}
+            <div className="hidden items-center gap-2 md:flex">
+              {profile.full_name && (
+                <span className="hidden text-right lg:block">
+                  <span className="block max-w-[200px] truncate text-body font-medium text-ink">
+                    {profile.full_name}
+                  </span>
+                  {roleLabel && <span className="block text-small text-muted">{roleLabel}</span>}
                 </span>
-                {roleLabel && <span className="block text-small text-muted">{roleLabel}</span>}
-              </span>
-            )}
-            <LocaleSwitcher />
-            <LogoutButton label={t("logout")} />
+              )}
+              <LocaleSwitcher />
+              <LogoutButton label={t("logout")} />
+            </div>
+            <ProfileSheet name={profile.full_name} phone={profile.phone} roleLabel={roleLabel} />
           </div>
         </div>
       </header>
@@ -50,7 +58,8 @@ export async function AppShell({
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        {/* page-enter — появление страницы после навигации, правило в globals.css */}
+        <main className="page-enter min-w-0 flex-1">{children}</main>
       </div>
 
       <BottomTabs items={items} />

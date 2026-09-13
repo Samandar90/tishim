@@ -116,7 +116,9 @@
     "settings": "Настройки",
     "rolePatient": "Пациент",
     "roleDentist": "Стоматолог",
-    "roleAdmin": "Администратор"
+    "roleAdmin": "Администратор",
+    "profile": "Профиль",
+    "language": "Язык"
   },
   "odontogram": {
     "permanent": "Постоянные",

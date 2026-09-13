@@ -94,7 +94,8 @@ npm run dev
 
 Общие блоки: `EmptyState` (пустые состояния), `Skeleton`/`ListSkeleton`/`ChartSkeleton`
 (загрузка), `Toast` (подтверждения), `ConfirmDialog` (необратимые действия),
-`Field` (поле с inline-ошибкой).
+`Field` (поле с inline-ошибкой), `Sheet` (шторка снизу на телефоне, диалог на десктопе),
+`Avatar` (инициалы).
 
 ## Архитектура
 

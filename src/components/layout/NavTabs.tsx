@@ -118,7 +118,7 @@ export function BottomTabs({ items }: { items: NavItem[] }) {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex min-h-touch flex-1 flex-col items-center justify-center gap-1 px-1 py-2 text-[11px] font-medium leading-tight transition-colors",
+                "flex min-h-touch flex-1 flex-col items-center justify-center gap-1 px-1 py-2 text-[11px] font-medium leading-tight transition-colors active:opacity-60",
                 active ? "text-primary-700" : "text-muted"
               )}
             >

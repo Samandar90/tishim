@@ -18,6 +18,20 @@ vi.mock("next/navigation", () => ({
   notFound: vi.fn(),
 }));
 
+// jsdom не реализует showModal/close у <dialog> — минимум для тестов шторок
+// и подтверждений: атрибут open и событие close, как у настоящего.
+// typeof — setup выполняется и для файлов с окружением node, где DOM нет.
+if (typeof HTMLDialogElement !== "undefined") {
+  HTMLDialogElement.prototype.showModal = function () {
+    this.setAttribute("open", "");
+  };
+  HTMLDialogElement.prototype.close = function () {
+    if (!this.hasAttribute("open")) return;
+    this.removeAttribute("open");
+    this.dispatchEvent(new Event("close"));
+  };
+}
+
 afterEach(() => {
   cleanup();
 });

@@ -53,6 +53,21 @@ export function formatUzPhone(raw: string): string {
   return out;
 }
 
+/**
+ * Инициалы для аватара: «Иванов Иван Иванович» → «ИИ». Первая кодовая точка
+ * через Array.from, а не charAt — суррогатные пары не режутся пополам.
+ * Без Intl: одинаково на сервере и в браузере, гидратация не расходится.
+ */
+export function initials(fullName: string): string {
+  return fullName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => Array.from(word)[0].toUpperCase())
+    .join("");
+}
+
 export function calcTotal(subtotal: number, discountPercent: number): number {
   const total = subtotal * (1 - Math.min(Math.max(discountPercent, 0), 100) / 100);
   return Math.round(total * 100) / 100;

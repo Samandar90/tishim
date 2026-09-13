@@ -116,7 +116,9 @@
     "settings": "Sozlamalar",
     "rolePatient": "Bemor",
     "roleDentist": "Stomatolog",
-    "roleAdmin": "Administrator"
+    "roleAdmin": "Administrator",
+    "profile": "Profil",
+    "language": "Til"
   },
   "odontogram": {
     "permanent": "Doimiy",

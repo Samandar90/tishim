@@ -18,7 +18,7 @@ export default async function PatientLayout({ children }: { children: React.Reac
     <AppShell
       items={items}
       homeHref="/dashboard"
-      userName={profile.full_name}
+      profile={profile}
       roleLabel={t("rolePatient")}
     >
       {children}

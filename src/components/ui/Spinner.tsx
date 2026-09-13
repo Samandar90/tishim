@@ -17,10 +17,17 @@ export function Spinner({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Появляется с задержкой, чтобы на быстрых переходах не мигать перед fade
+ * страницы. Обёртка внутренняя: корень уже анимирует .page-enter > *, два
+ * animation на одном элементе перебили бы друг друга.
+ */
 export function PageSpinner() {
   return (
     <div className="flex min-h-[40vh] items-center justify-center">
-      <Spinner className="size-8" />
+      <span className="animate-fade-in-late">
+        <Spinner className="size-8" />
+      </span>
     </div>
   );
 }
