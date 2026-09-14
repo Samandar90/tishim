@@ -110,13 +110,20 @@ export function NewVisitForm({
     [items, serviceFee]
   );
 
-  const markedTeeth = useMemo(
-    () => new Set(items.map((i) => i.tooth_fdi).filter((fdi) => ALL_PERMANENT.includes(fdi))),
-    [items]
-  );
+  // Считаются и зубы из прошлых приёмов: цель разметки — карта без неизвестных
+  // зубов, а уже известные «остальные — здоровы» трогать не должна.
+  const knownTeeth = useMemo(() => {
+    const known = new Set(ALL_PERMANENT.filter((fdi) => fdi in chart));
+    for (const i of items) {
+      if (ALL_PERMANENT.includes(i.tooth_fdi)) known.add(i.tooth_fdi);
+    }
+    return known;
+  }, [items, chart]);
 
   function markRestHealthy() {
-    const rest = ALL_PERMANENT.filter((fdi) => !markedTeeth.has(fdi));
+    // healthy без поверхностей встаёт в слот whole и затёр бы удалённый зуб,
+    // имплант или коронку, записанные раньше
+    const rest = ALL_PERMANENT.filter((fdi) => !knownTeeth.has(fdi));
     setItems((prev) => [
       ...prev,
       ...rest.map((fdi) => ({
@@ -339,19 +346,19 @@ export function NewVisitForm({
             <div className="h-2 overflow-hidden rounded-full bg-white">
               <div
                 className="h-full rounded-full bg-primary-600 transition-all"
-                style={{ width: `${Math.round((markedTeeth.size / ALL_PERMANENT.length) * 100)}%` }}
+                style={{ width: `${Math.round((knownTeeth.size / ALL_PERMANENT.length) * 100)}%` }}
               />
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-sm font-semibold tabular-nums text-primary-800">
-                {t("markedCount", { count: markedTeeth.size, total: ALL_PERMANENT.length })}
+                {t("markedCount", { count: knownTeeth.size, total: ALL_PERMANENT.length })}
               </span>
               <Button
                 type="button"
                 variant="secondary"
                
                 onClick={markRestHealthy}
-                disabled={markedTeeth.size >= ALL_PERMANENT.length}
+                disabled={chartLoading || knownTeeth.size >= ALL_PERMANENT.length}
               >
                 {t("markRestHealthy")}
               </Button>

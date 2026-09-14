@@ -23,6 +23,13 @@ export const WHOLE_TOOTH_CONDITIONS: ToothCondition[] = [
 /** Conditions rendered on the root (endodontics / periodontics). */
 export const ROOT_CONDITIONS: ToothCondition[] = ["root_canal", "pulpitis", "periodontitis"];
 
+/**
+ * Состояния на весь зуб, после которых своего корня у зуба нет, — они гасят и
+ * слот корня. Коронка и мост сюда не входят: их ставят на живой корень, часто
+ * после лечения каналов. Эти списки повторены во view current_tooth_state (00010).
+ */
+export const ROOT_REMOVING_CONDITIONS: ToothCondition[] = ["implant", "extracted", "missing"];
+
 export const ALL_CONDITIONS: ToothCondition[] = [
   "healthy",
   "caries",

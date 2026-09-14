@@ -24,8 +24,10 @@ function rec(
 ): ToothRecord {
   const d = new Date();
   d.setDate(d.getDate() - daysAgo);
+  seq += 1;
   return {
-    id: String(++seq),
+    id: String(seq),
+    seq,
     visit_id: "v" + daysAgo,
     patient_id: "demo",
     tooth_fdi: tooth,

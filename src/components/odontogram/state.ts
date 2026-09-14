@@ -1,16 +1,25 @@
 import type { ToothRecord } from "@/lib/types/database";
-import { ROOT_CONDITIONS, WHOLE_TOOTH_CONDITIONS } from "@/lib/constants/teeth";
+import {
+  ROOT_CONDITIONS,
+  ROOT_REMOVING_CONDITIONS,
+  WHOLE_TOOTH_CONDITIONS,
+} from "@/lib/constants/teeth";
 import type { ChartState, ToothState } from "./types";
 
 /**
  * Current tooth state is never stored — it is derived: for every
  * (tooth, surface) the latest tooth_records row by created_at wins.
  * Whole-tooth and root conditions occupy their own slots.
+ *
+ * Записи одного приёма уходят одним insert и получают общий created_at —
+ * между ними порядок решает seq (порядок вставки). Эти же правила повторяет
+ * view current_tooth_state (миграция 00010), расходиться им нельзя.
  */
 export function buildChartState(records: ToothRecord[], atDate?: string | null): ChartState {
   const cutoff = atDate ? endOfDay(atDate) : null;
   const sorted = [...records].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime() || a.seq - b.seq
   );
 
   const chart: ChartState = {};
@@ -36,6 +45,9 @@ export function buildChartState(records: ToothRecord[], atDate?: string | null):
       // a new whole-tooth state supersedes earlier surface marks
       if (WHOLE_TOOTH_CONDITIONS.includes(rec.condition)) {
         tooth.surfaces = {};
+      }
+      // коронка и мост стоят на своём корне — каналы под ними не пропадают
+      if (ROOT_REMOVING_CONDITIONS.includes(rec.condition)) {
         tooth.root = undefined;
       }
       continue;

@@ -144,6 +144,8 @@ export interface ToothRecord {
   note: string | null;
   price: number;
   created_at: string;
+  /** Порядок вставки: разводит записи одного приёма, у которых общий created_at. */
+  seq: number;
 }
 
 export interface Attachment {

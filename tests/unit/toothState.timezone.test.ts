@@ -10,8 +10,10 @@ import type { ToothRecord } from "@/lib/types/database";
 
 let seq = 0;
 function rec(created_at: string): ToothRecord {
+  seq += 1;
   return {
-    id: `r${++seq}`,
+    id: `r${seq}`,
+    seq,
     visit_id: "v1",
     patient_id: "p1",
     tooth_fdi: 16,

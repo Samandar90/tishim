@@ -4,8 +4,10 @@ import type { ToothRecord } from "@/lib/types/database";
 
 let seq = 0;
 function rec(p: Partial<ToothRecord> & { created_at: string }): ToothRecord {
+  seq += 1;
   return {
-    id: `r${++seq}`,
+    id: `r${seq}`,
+    seq,
     visit_id: "v1",
     patient_id: "p1",
     tooth_fdi: 16,
@@ -35,15 +37,58 @@ describe("buildChartState", () => {
     expect(chart[16].surfaces.O?.condition).toBe("filling");
   });
 
-  it("whole-tooth состояние стирает более ранние поверхности и корень", () => {
-    const chart = buildChartState([
-      rec({ created_at: "2026-01-01T10:00:00Z", tooth_fdi: 16, surfaces: ["O"], condition: "caries" }),
-      rec({ created_at: "2026-02-01T10:00:00Z", tooth_fdi: 16, condition: "root_canal" }),
-      rec({ created_at: "2026-03-01T10:00:00Z", tooth_fdi: 16, condition: "crown" }),
-    ]);
-    expect(chart[16].whole?.condition).toBe("crown");
-    expect(chart[16].surfaces).toEqual({});
-    expect(chart[16].root).toBeUndefined();
+  it.each(["crown", "bridge"] as const)(
+    "%s стирает более ранние поверхности, но каналы под ней остаются",
+    (condition) => {
+      const chart = buildChartState([
+        rec({ created_at: "2026-01-01T10:00:00Z", tooth_fdi: 36, surfaces: ["O"], condition: "caries" }),
+        rec({ created_at: "2026-02-01T10:00:00Z", tooth_fdi: 36, condition: "root_canal" }),
+        rec({ created_at: "2026-03-01T10:00:00Z", tooth_fdi: 36, condition }),
+      ]);
+      expect(chart[36].whole?.condition).toBe(condition);
+      expect(chart[36].surfaces).toEqual({});
+      expect(chart[36].root?.condition).toBe("root_canal");
+    }
+  );
+
+  it.each(["implant", "extracted", "missing"] as const)(
+    "%s стирает и поверхности, и корень — своего корня у зуба больше нет",
+    (condition) => {
+      const chart = buildChartState([
+        rec({ created_at: "2026-01-01T10:00:00Z", tooth_fdi: 47, surfaces: ["O", "D"], condition: "caries" }),
+        rec({ created_at: "2026-02-01T10:00:00Z", tooth_fdi: 47, condition: "root_canal" }),
+        rec({ created_at: "2026-03-01T10:00:00Z", tooth_fdi: 47, condition }),
+      ]);
+      expect(chart[47].whole?.condition).toBe(condition);
+      expect(chart[47].surfaces).toEqual({});
+      expect(chart[47].root).toBeUndefined();
+    }
+  );
+
+  describe("записи одного приёма с общим created_at", () => {
+    const at = "2026-04-01T10:00:00Z";
+
+    it("порядок решает seq, а не порядок во входном массиве", () => {
+      const chart = buildChartState([
+        rec({ created_at: at, seq: 2, surfaces: ["O"], condition: "filling" }),
+        rec({ created_at: at, seq: 1, surfaces: ["O"], condition: "caries" }),
+      ]);
+      expect(chart[16].surfaces.O?.condition).toBe("filling");
+    });
+
+    it("коронка гасит поверхности, записанные в приёме до неё, но не после", () => {
+      const fillingThenCrown = buildChartState([
+        rec({ created_at: at, seq: 2, condition: "crown" }),
+        rec({ created_at: at, seq: 1, surfaces: ["O"], condition: "filling" }),
+      ]);
+      expect(fillingThenCrown[16].surfaces).toEqual({});
+
+      const crownThenFilling = buildChartState([
+        rec({ created_at: at, seq: 2, surfaces: ["O"], condition: "filling" }),
+        rec({ created_at: at, seq: 1, condition: "crown" }),
+      ]);
+      expect(crownThenFilling[16].surfaces.O?.condition).toBe("filling");
+    });
   });
 
   it("atDate отсекает будущее по концу дня включительно", () => {
