@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { RotateCw } from "lucide-react";
 import { useToothState } from "@/hooks/useToothState";
@@ -16,22 +17,76 @@ import { Tooth } from "./Tooth";
 import { Legend } from "./Legend";
 import { HistorySlider } from "./HistorySlider";
 import { ToothSheet } from "./ToothSheet";
+import type { JawView } from "./archLayout";
 import type { Dentition } from "./Odontogram";
+import type { ChartState } from "./types";
+
+// three грузится отдельным чанком, только когда карта на экране, и в серверном
+// рендере не участвует — WebGL есть только в браузере.
+const Jaw3D = dynamic(() => import("./Jaw3D"), { ssr: false });
+
+const segment = (active: boolean) =>
+  cn(
+    "min-h-touch rounded-lg px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
+    active ? "bg-primary-600 text-white" : "text-slate-300 hover:text-white"
+  );
+
+/** Карта пациента из базы; как она выглядит — TeethSceneView. */
+export function TeethScene({ patientId, title }: { patientId: string; title?: string }) {
+  const [atDate, setAtDate] = useState<string | null>(null);
+  const { chart, recordDates, loading, error, refresh } = useToothState(patientId, atDate);
+
+  return (
+    <TeethSceneView
+      title={title}
+      chart={chart}
+      recordDates={recordDates}
+      atDate={atDate}
+      onAtDateChange={setAtDate}
+      loading={loading}
+      failed={error !== null}
+      onRetry={() => void refresh()}
+    />
+  );
+}
 
 /**
- * Карта зубов как сцена: тёмная подложка, обе челюсти целиком без
- * горизонтального скролла, тап по зубу открывает шторку с подробностями.
- * Только чтение. На телефоне зуб ~20px — поверхности читаются как цвет,
- * детали живут в шторке; «промах» исправляется стрелками в ней.
+ * Карта зубов как сцена: тёмная подложка, обе челюсти в 3D — их вращают пальцем,
+ * тап по зубу открывает шторку с подробностями. Только чтение. Без WebGL остаётся
+ * плоская схема: на телефоне зуб ~20px, поверхности читаются как цвет, детали — в
+ * шторке, «промах» исправляется стрелками в ней.
  */
-export function TeethScene({ patientId, title }: { patientId: string; title?: string }) {
+export function TeethSceneView({
+  title,
+  chart,
+  recordDates,
+  atDate,
+  onAtDateChange,
+  loading,
+  failed,
+  onRetry,
+}: {
+  title?: string;
+  chart: ChartState;
+  recordDates: string[];
+  atDate: string | null;
+  onAtDateChange: (date: string | null) => void;
+  loading: boolean;
+  failed: boolean;
+  onRetry: () => void;
+}) {
   const t = useTranslations("odontogram");
   const td = useTranslations("dashboard");
   const tc = useTranslations("common");
-  const [atDate, setAtDate] = useState<string | null>(null);
   const [dentition, setDentition] = useState<Dentition>("permanent");
+  const [view, setView] = useState<JawView>("both");
+  const [viewResets, setViewResets] = useState(0);
   const [activeFdi, setActiveFdi] = useState<number | null>(null);
-  const { chart, recordDates, loading, error, refresh } = useToothState(patientId, atDate);
+  // Сцена показывается, когда собрана именно для выбранного прикуса; до этого на её
+  // месте заглушка, а совсем без WebGL — плоская схема.
+  const [readyDentition, setReadyDentition] = useState<Dentition | null>(null);
+  const [no3d, setNo3d] = useState(false);
+  const ready = !no3d && readyDentition === dentition;
 
   const [upper, lower] =
     dentition === "permanent" ? [PERMANENT_UPPER, PERMANENT_LOWER] : [PRIMARY_UPPER, PRIMARY_LOWER];
@@ -104,10 +159,7 @@ export function TeethScene({ patientId, title }: { patientId: string; title?: st
                     setDentition(d);
                     setActiveFdi(null);
                   }}
-                  className={cn(
-                    "min-h-touch rounded-lg px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
-                    dentition === d ? "bg-primary-600 text-white" : "text-slate-300 hover:text-white"
-                  )}
+                  className={segment(dentition === d)}
                 >
                   {t(d)}
                 </button>
@@ -120,13 +172,13 @@ export function TeethScene({ patientId, title }: { patientId: string; title?: st
               <div className="h-20 rounded-xl bg-white/10" />
               <div className="h-20 rounded-xl bg-white/10" />
             </div>
-          ) : error ? (
+          ) : failed ? (
             <div className="space-y-3 py-8 text-center">
               <p className="text-body text-slate-300">{td("loadError")}</p>
               <Button
                 variant="secondary"
                 className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-                onClick={() => void refresh()}
+                onClick={onRetry}
               >
                 <RotateCw className="size-4" />
                 {tc("retry")}
@@ -134,16 +186,61 @@ export function TeethScene({ patientId, title }: { patientId: string; title?: st
             </div>
           ) : (
             <>
-              <div className="space-y-1">
-                {jawLabel("upperJaw")}
-                {renderRow(upper, "upper")}
-                <div className="border-t border-dashed border-white/15" />
-                {renderRow(lower, "lower")}
-                {jawLabel("lowerJaw")}
-              </div>
-              <p className="text-center text-[11px] text-slate-500">{t("tapHint")}</p>
+              {no3d ? (
+                <div className="space-y-1">
+                  {jawLabel("upperJaw")}
+                  {renderRow(upper, "upper")}
+                  <div className="border-t border-dashed border-white/15" />
+                  {renderRow(lower, "lower")}
+                  {jawLabel("lowerJaw")}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="relative h-72 sm:h-96">
+                    {!ready && (
+                      <div aria-busy className="absolute inset-0 animate-pulse rounded-xl bg-white/5" />
+                    )}
+                    <Jaw3D
+                      chart={chart}
+                      dentition={dentition}
+                      view={view}
+                      viewResets={viewResets}
+                      activeFdi={activeFdi}
+                      label={t("jaw3d")}
+                      onToothClick={setActiveFdi}
+                      onReady={setReadyDentition}
+                      onFail={() => setNo3d(true)}
+                      className={cn(
+                        "absolute inset-0 transition-opacity duration-300",
+                        ready ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <div className="flex rounded-xl border border-white/15 bg-white/5 p-0.5">
+                      {(["both", "upper", "lower"] as const).map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => {
+                            setView(v);
+                            setViewResets((n) => n + 1);
+                          }}
+                          aria-pressed={view === v}
+                          className={segment(view === v)}
+                        >
+                          {t(`jawView.${v}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <p className="text-center text-[11px] text-slate-500">
+                {t(no3d ? "tapHint" : "jawHint")}
+              </p>
               <Legend chart={chart} onDark />
-              <HistorySlider dates={recordDates} value={atDate} onChange={setAtDate} onDark />
+              <HistorySlider dates={recordDates} value={atDate} onChange={onAtDateChange} onDark />
             </>
           )}
         </div>

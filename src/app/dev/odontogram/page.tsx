@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { notFound } from "next/navigation";
 import { Odontogram } from "@/components/odontogram/Odontogram";
-import { HistorySlider } from "@/components/odontogram/HistorySlider";
+import { TeethSceneView } from "@/components/odontogram/TeethScene";
 import { buildChartState, extractRecordDates } from "@/components/odontogram/state";
 import type { ToothRecord } from "@/lib/types/database";
 import { Card, CardTitle } from "@/components/ui/Card";
@@ -69,15 +69,20 @@ export default function OdontogramDevPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 p-4">
+      {/* та же сцена, что у пациента на дашборде и у врача в карте, — на моках, без входа */}
+      <TeethSceneView
+        title="Карта (моки)"
+        chart={chart}
+        recordDates={dates}
+        atDate={atDate}
+        onAtDateChange={setAtDate}
+        loading={false}
+        failed={false}
+        onRetry={() => undefined}
+      />
       <Card>
-        <CardTitle>Odontogram — dev preview (mock data)</CardTitle>
-        <div className="space-y-3">
-          <Odontogram
-            chart={chart}
-            onSurfaceClick={(fdi, part) => alert(`${fdi} · ${part}`)}
-          />
-          <HistorySlider dates={dates} value={atDate} onChange={setAtDate} />
-        </div>
+        <CardTitle>Схема для формы приёма (2D)</CardTitle>
+        <Odontogram chart={chart} onSurfaceClick={(fdi, part) => alert(`${fdi} · ${part}`)} />
       </Card>
       <Card>
         <CardTitle>Mini (visit view)</CardTitle>
