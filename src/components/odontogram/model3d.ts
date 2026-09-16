@@ -32,33 +32,60 @@ export function toothModel(fdi: number, lod: "detail" | "jaw" = "detail"): Tooth
   };
 }
 
-/** Узлы модели, которые красятся по карте: поверхности коронки и корень. */
-export type ToothNode = Surface | "root";
+/** Узлы модели: поверхности коронки, корень и детали, которых у здорового зуба нет. */
+export type ToothNode = Surface | "root" | "crown" | "implant" | "canals";
+
+/** Детали, которые в модели есть всегда, но видны, только когда их требует карта. */
+export const EXTRA_NODES: readonly ToothNode[] = ["crown", "implant", "canals"];
 
 export interface ToothPaint {
   /** Цвет по узлу; узла в списке нет — у него натуральный материал модели. */
   colors: Partial<Record<ToothNode, string>>;
+  /** Видимость, отличная от обычной: детали по умолчанию скрыты, остальное видно. */
+  visible: Partial<Record<ToothNode, boolean>>;
+  /** Корень полупрозрачный — сквозь него видны пломбированные каналы. */
+  seeThroughRoot: boolean;
   /** Зуб удалён или отсутствует — модель показывается полупрозрачной. */
   ghost: boolean;
 }
 
 /**
  * Те же правила, что у плоского Tooth: коронка, мост, имплант и отсутствие зуба
- * красят коронку целиком поверх отдельных поверхностей. Отличие одно: геометрии
- * каналов в модели нет, поэтому лечение каналов красит корень целиком.
+ * красят коронку целиком поверх отдельных поверхностей. Чего нет на плоской схеме,
+ * показывают детали модели: коронка и мост надеты колпачком, имплант стоит вместо
+ * корня, а пролеченные каналы видны сквозь полупрозрачный корень.
  */
 export function toothPaint(state: ToothState | undefined): ToothPaint {
   const whole = state?.whole?.condition;
+  const rootCondition = state?.root?.condition;
   const ghost = whole === "extracted" || whole === "missing";
-  const crownOverride = ghost || whole === "crown" || whole === "bridge" || whole === "implant";
+  const implant = whole === "implant";
+  const capped = whole === "crown" || whole === "bridge" || implant;
 
   const colors: ToothPaint["colors"] = {};
+  const visible: ToothPaint["visible"] = {};
   for (const s of ALL_SURFACES) {
-    const condition = crownOverride ? whole : state?.surfaces[s]?.condition;
+    const condition = ghost || capped ? whole : state?.surfaces[s]?.condition;
     if (condition && condition !== "healthy") colors[s] = CONDITION_COLORS[condition];
   }
-  const root = ghost || whole === "implant" ? whole : state?.root?.condition;
-  if (root && root !== "healthy") colors.root = CONDITION_COLORS[root];
+  if (capped && whole) {
+    visible.crown = true;
+    colors.crown = CONDITION_COLORS[whole];
+  }
+  if (implant) {
+    visible.implant = true;
+    visible.root = false;
+  }
 
-  return { colors, ghost };
+  const canals = !ghost && !implant && rootCondition === "root_canal";
+  if (canals) {
+    visible.canals = true;
+    colors.canals = CONDITION_COLORS.root_canal;
+  } else if (ghost && whole) {
+    colors.root = CONDITION_COLORS[whole];
+  } else if (!implant && rootCondition && rootCondition !== "healthy") {
+    colors.root = CONDITION_COLORS[rootCondition];
+  }
+
+  return { colors, visible, seeThroughRoot: canals, ghost };
 }

@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { TEETH } from "./anatomy.mjs";
 import { buildTooth } from "./field.mjs";
 import { polygonize } from "./mesh.mjs";
+import { canalsPart, implantPart } from "./extras.mjs";
 import { encodeGlb } from "./glb.mjs";
 import { renderSheet } from "./preview.mjs";
 
@@ -35,21 +36,34 @@ mkdirSync(out, { recursive: true });
 const built = new Map();
 const rows = [];
 
+/**
+ * Коронка, имплант и каналы: в модели они есть всегда, приложение показывает их по
+ * карте. Для челюсти детали грубее — она грузит 16 файлов разом, часто по мобильной сети.
+ */
+function extras(tooth, h, detailed) {
+  return [
+    ...polygonize(tooth.capField, tooth.capBounds, detailed ? Math.max(h, 0.5) : h * 1.25, () => "crown").parts,
+    implantPart(tooth.implant, detailed ? 24 : 10, detailed ? 4 : 2),
+    canalsPart(tooth.canals, detailed ? 0.45 : 0.55, detailed ? 10 : 5, detailed ? 6 : 3),
+  ];
+}
+
 for (const fdi of list) {
   const spec = TEETH[fdi];
   if (!spec) throw new Error(`Нет анатомии для зуба ${fdi}`);
   const started = performance.now();
   const tooth = buildTooth(spec);
   const hi = polygonize(tooth.field, tooth.bounds, step, tooth.classify);
-  const hiBytes = encodeGlb(`tooth-${fdi}`, hi.parts);
+  const hiBytes = encodeGlb(`tooth-${fdi}`, [...hi.parts, ...extras(tooth, step, true)]);
   writeFileSync(join(out, `${fdi}.glb`), hiBytes);
   let loInfo = "";
   if (loStep > 0) {
     const lo = polygonize(tooth.field, tooth.bounds, loStep, tooth.classify);
-    const loBytes = encodeGlb(`tooth-${fdi}`, lo.parts);
+    const loBytes = encodeGlb(`tooth-${fdi}`, [...lo.parts, ...extras(tooth, loStep, false)]);
     writeFileSync(join(out, `${fdi}-lo.glb`), loBytes);
     loInfo = `lo ${lo.triangles} tri ${(loBytes.length / 1024).toFixed(0)} KB`;
   }
+  // превью рисует только сам зуб: колпачок и имплант закрыли бы поверхности
   built.set(fdi, hi.parts);
   rows.push(`${fdi}: ${hi.triangles} tri ${(hiBytes.length / 1024).toFixed(0)} KB | ${loInfo} | ${(performance.now() - started).toFixed(0)} ms | ${hi.parts.map((p) => p.name).join(",")}`);
 }

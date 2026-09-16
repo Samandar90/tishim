@@ -137,7 +137,13 @@ export function polygonize(field, bounds, h, classify) {
   // Треугольники: короткая диагональ, ориентация наружу по нормалям вершин
   const tris = [];
   const region = [];
-  const regionOf = new Map(PART_ORDER.map((p, i) => [p, i]));
+  // кроме поверхностей карты поле может описывать и отдельную деталь — коронку;
+  // её имя дописывается в конец списка частей
+  const names = [...PART_ORDER];
+  const regionOf = (name) => {
+    const i = names.indexOf(name);
+    return i === -1 ? names.push(name) - 1 : i;
+  };
   const at = (v, c) => P[v * 3 + c];
   const tri = (a, b, c) => {
     const u = [0, 1, 2].map((i) => at(b, i) - at(a, i));
@@ -145,7 +151,7 @@ export function polygonize(field, bounds, h, classify) {
     const cross = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
     const facing = [0, 1, 2].reduce((s, i) => s + cross[i] * (N[a * 3 + i] + N[b * 3 + i] + N[c * 3 + i]), 0);
     tris.push(...(facing < 0 ? [a, c, b] : [a, b, c]));
-    region.push(regionOf.get(classify(...[0, 1, 2].map((i) => (at(a, i) + at(b, i) + at(c, i)) / 3))));
+    region.push(regionOf(classify(...[0, 1, 2].map((i) => (at(a, i) + at(b, i) + at(c, i)) / 3))));
   };
   for (let q = 0; q < quads.length; q += 4) {
     const [a, b, c, d] = [quads[q], quads[q + 1], quads[q + 2], quads[q + 3]];
@@ -164,7 +170,7 @@ export function polygonize(field, bounds, h, classify) {
 
   // Каждая поверхность — отдельный меш; вершины на границах дублируются
   const parts = [];
-  PART_ORDER.forEach((name, r) => {
+  names.forEach((name, r) => {
     const remap = new Map();
     const positions = [];
     const normals = [];
@@ -186,7 +192,7 @@ export function polygonize(field, bounds, h, classify) {
     if (!indices.length) return;
     parts.push({
       name,
-      material: name === "root" ? "root" : "enamel",
+      material: name === "root" ? "root" : name === "crown" ? "ceramic" : "enamel",
       positions: new Float32Array(positions),
       normals: new Float32Array(normals),
       indices: remap.size < 65536 ? new Uint16Array(indices) : new Uint32Array(indices),

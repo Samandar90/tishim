@@ -12,7 +12,7 @@ import {
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import type { ToothNode, ToothPaint } from "./model3d";
+import { EXTRA_NODES, type ToothNode, type ToothPaint } from "./model3d";
 
 // Модели кэшируются на всю жизнь страницы: шторку зуба и карту открывают снова и
 // снова, и качать и разбирать те же GLB повторно незачем.
@@ -78,18 +78,24 @@ export function makePaintable(root: Object3D): Paintable {
   return { root, natural };
 }
 
-export function paintModel({ root, natural }: Paintable, { colors, ghost }: ToothPaint) {
+export function paintModel(
+  { root, natural }: Paintable,
+  { colors, visible, seeThroughRoot, ghost }: ToothPaint
+) {
   root.traverse((o) => {
     if (!(o instanceof Mesh)) return;
+    const node = o.name as ToothNode;
+    o.visible = visible[node] ?? !EXTRA_NODES.includes(node);
     const material = o.material as MeshStandardMaterial;
-    const color = colors[o.name as ToothNode] ?? natural.get(material);
+    const color = colors[node] ?? natural.get(material);
     if (color) material.color.set(color);
-    if (material.transparent !== ghost) {
-      material.transparent = ghost;
-      material.depthWrite = !ghost;
+    const translucent = ghost || (seeThroughRoot && node === "root");
+    if (material.transparent !== translucent) {
+      material.transparent = translucent;
+      material.depthWrite = !translucent;
       material.needsUpdate = true;
     }
-    material.opacity = ghost ? 0.3 : 1;
+    material.opacity = ghost ? 0.3 : translucent ? 0.4 : 1;
   });
 }
 

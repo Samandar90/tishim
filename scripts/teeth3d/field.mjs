@@ -170,5 +170,43 @@ export function buildTooth(spec) {
     return z > 0 ? "V" : "L";
   }
 
-  return { field, bounds, classify };
+  // Коронка — то же поле, раздутое на толщину стенки и срезанное чуть ниже шейки:
+  // она закрывает свою коронку целиком, как настоящая.
+  const CAP = 0.35;
+  const capField = (x, y, z) => smax(field(x, y, z) - CAP, -(y + 0.3), 0.3);
+  const capBounds = { min: [bounds.min[0], -1.5, bounds.min[2]], max: bounds.max };
+
+  // Пломбированные каналы — ломаные от пульповой камеры по оси каждого корня,
+  // не доходя до верхушки. Точки корней те же, что в field(), но в мировом Z:
+  // там Z сжат на fz.
+  const chamber = [0, Math.min(1.5, crown * 0.2), 0];
+  const [aT, bT] = multi ? widths(-spec.trunk * 0.5) : [0, 0];
+  const canals = multi
+    ? roots.map((r) => {
+        const sx = r.x * aT, sz = r.z * bT, sy = -spec.trunk * 0.4;
+        const ex = sx + r.ax, ey = -r.len, ez = sz + r.az;
+        const mx = sx + r.ax * 0.45 - 0.25, my = sy + (ey - sy) * 0.55, mz = sz + r.az * 0.45;
+        const tip = 0.85;
+        return [
+          chamber,
+          [sx * 0.5, sy * 0.3, sz * 0.5],
+          [sx, sy, sz],
+          [mx, my, mz],
+          [mx + (ex - mx) * tip, my + (ey - my) * tip, mz + (ez - mz) * tip],
+        ];
+      })
+    : [
+        Array.from({ length: 7 }, (_, i) => {
+          const y = chamber[1] - (i / 6) * (chamber[1] + rootLen - 1.8);
+          return [widths(y)[2], y, 0];
+        }),
+      ];
+
+  // Имплант — на оси зуба, толщиной по шейке, короче корня.
+  const implant = {
+    radius: clamp(Math.min(spec.mdCervix, spec.vlCervix) * 0.31, 1.7, 2.5),
+    length: clamp(rootLen - 1.5, 8, 12),
+  };
+
+  return { field, bounds, classify, capField, capBounds, canals, implant };
 }
