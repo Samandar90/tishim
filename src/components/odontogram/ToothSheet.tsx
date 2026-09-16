@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Rotate3d, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ToothCondition } from "@/lib/types/database";
 import {
   ALL_SURFACES,
@@ -14,12 +12,8 @@ import {
 import { cn, formatDate } from "@/lib/utils";
 import { Sheet } from "@/components/ui/Sheet";
 import { recordDay } from "./state";
-import { Tooth } from "./Tooth";
+import { ToothStage } from "./ToothStage";
 import type { SurfaceState, ToothPart, ToothState } from "./types";
-
-// three тяжёлый: чанк с ним грузится, только когда шторку зуба открыли, и в
-// серверном рендере не участвует — WebGL есть только в браузере.
-const Tooth3D = dynamic(() => import("./Tooth3D"), { ssr: false });
 
 interface Row {
   part: ToothPart | "whole";
@@ -82,20 +76,6 @@ export function ToothSheet({
       ? `${t(`toothNames.${toothPositionKey(fdi)}`)} · ${t(`quadrants.${quadrantKey(fdi)}`)}`
       : "";
 
-  // Пока модель открытого зуба не на экране — и совсем без WebGL — на её месте
-  // плоский зуб, чтобы шторка не открывалась с пустым окном.
-  const [readyFdi, setReadyFdi] = useState<number | null>(null);
-  const [no3d, setNo3d] = useState(false);
-  const ready = !no3d && readyFdi === fdi;
-
-  useEffect(() => {
-    // сбой загрузки не должен выключать 3D до перезагрузки страницы
-    if (fdi === null) {
-      setReadyFdi(null);
-      setNo3d(false);
-    }
-  }, [fdi]);
-
   const navButton =
     "flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-300 transition-colors hover:bg-white/10 hover:text-white";
 
@@ -128,32 +108,7 @@ export function ToothSheet({
             </button>
           </header>
 
-          <div className="relative mt-4 h-56 overflow-hidden rounded-2xl bg-white/5">
-            {!ready && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Tooth fdi={fdi} state={state} readOnly onDark width={88} />
-              </div>
-            )}
-            {!no3d && (
-              <Tooth3D
-                fdi={fdi}
-                state={state}
-                label={t("model3d", { fdi })}
-                onReady={setReadyFdi}
-                onFail={() => setNo3d(true)}
-                className={cn(
-                  "absolute inset-0 transition-opacity duration-300",
-                  ready ? "opacity-100" : "opacity-0"
-                )}
-              />
-            )}
-            {ready && (
-              <Rotate3d
-                aria-hidden
-                className="pointer-events-none absolute right-3 top-3 size-4 text-slate-500"
-              />
-            )}
-          </div>
+          <ToothStage fdi={fdi} state={state} className="mt-4 h-56 bg-white/5" />
 
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-2.5 py-1.5 text-body font-medium">

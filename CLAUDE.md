@@ -167,7 +167,8 @@ GLB в `public/models/teeth/` собирает свой генератор `scri
 компонента на чистом `three` (react-three-fiber 9 требует React 19):
 [Jaw3D](src/components/odontogram/Jaw3D.tsx) — обе челюсти в карте зубов
 (`TeethScene`, у пациента и у врача) и [Tooth3D](src/components/odontogram/Tooth3D.tsx) —
-один зуб в шторке. Оба подключены через `next/dynamic` без SSR, чтобы three грузился,
+один зуб в шторке и в превью формы приёма (обёртка `ToothStage` с плоским запасным
+вариантом). Оба подключены через `next/dynamic` без SSR, чтобы three грузился,
 только когда нужен; пока сцены нет или нет WebGL, на её месте плоская схема.
 Чистая логика вынесена и покрыта тестами: какой файл взять для зуба, как отразить
 квадрант и чем красить поверхности — [model3d.ts](src/components/odontogram/model3d.ts)

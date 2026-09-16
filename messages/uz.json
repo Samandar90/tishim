@@ -359,6 +359,12 @@
     "nextVisitDate": "Keyingi tashrif",
     "paymentStatus": "To'lov holati",
     "save": "Qabulni saqlash",
+    "next": "Keyingi",
+    "steps": {
+      "teeth": "Tishlar",
+      "details": "Qabul",
+      "payment": "To'lov"
+    },
     "saveError": "Qabulni saqlab bo'lmadi. Aloqani tekshirib, qayta urinib ko'ring.",
     "needRecords": "Kamida bitta yozuv qo'shing",
     "saved": "Qabul saqlandi",

@@ -5,7 +5,8 @@ import { notFound } from "next/navigation";
 import { Odontogram } from "@/components/odontogram/Odontogram";
 import { TeethSceneView } from "@/components/odontogram/TeethScene";
 import { buildChartState, extractRecordDates } from "@/components/odontogram/state";
-import type { ToothRecord } from "@/lib/types/database";
+import { NewVisitForm } from "@/components/visit/NewVisitForm";
+import type { Profile, ToothRecord } from "@/lib/types/database";
 import { Card, CardTitle } from "@/components/ui/Card";
 
 /**
@@ -60,6 +61,10 @@ const MOCK: ToothRecord[] = [
   rec(60, 33, "periodontitis"),
 ];
 
+// Форма приёма на выдуманном пациенте: история под анонимом не загрузится (RLS),
+// сохранить нельзя — страница только для просмотра шагов и превью без входа врачом.
+const MOCK_PATIENT = { id: "00000000-0000-0000-0000-000000000000", full_name: "Демо Пациент" } as Profile;
+
 export default function OdontogramDevPage() {
   if (process.env.NODE_ENV !== "development") notFound();
 
@@ -80,6 +85,10 @@ export default function OdontogramDevPage() {
         failed={false}
         onRetry={() => undefined}
       />
+      <Card>
+        <CardTitle>Форма приёма (мок-пациент)</CardTitle>
+        <NewVisitForm patient={MOCK_PATIENT} dentistId="demo" mappingPrice={150000} />
+      </Card>
       <Card>
         <CardTitle>Схема для формы приёма (2D)</CardTitle>
         <Odontogram chart={chart} onSurfaceClick={(fdi, part) => alert(`${fdi} · ${part}`)} />
