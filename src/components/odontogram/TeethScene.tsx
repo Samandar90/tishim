@@ -17,19 +17,13 @@ import { Tooth } from "./Tooth";
 import { Legend } from "./Legend";
 import { HistorySlider } from "./HistorySlider";
 import { ToothSheet } from "./ToothSheet";
-import type { JawView } from "./archLayout";
+import { JawViewToggle, segmentClass, useJawView } from "./JawViewToggle";
 import type { Dentition } from "./Odontogram";
 import type { ChartState } from "./types";
 
 // three грузится отдельным чанком, только когда карта на экране, и в серверном
 // рендере не участвует — WebGL есть только в браузере.
 const Jaw3D = dynamic(() => import("./Jaw3D"), { ssr: false });
-
-const segment = (active: boolean) =>
-  cn(
-    "min-h-touch rounded-lg px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
-    active ? "bg-primary-600 text-white" : "text-slate-300 hover:text-white"
-  );
 
 /** Карта пациента из базы; как она выглядит — TeethSceneView. */
 export function TeethScene({ patientId, title }: { patientId: string; title?: string }) {
@@ -79,8 +73,7 @@ export function TeethSceneView({
   const td = useTranslations("dashboard");
   const tc = useTranslations("common");
   const [dentition, setDentition] = useState<Dentition>("permanent");
-  const [view, setView] = useState<JawView>("both");
-  const [viewResets, setViewResets] = useState(0);
+  const { view, resets, select } = useJawView();
   const [activeFdi, setActiveFdi] = useState<number | null>(null);
   // Сцена показывается, когда собрана именно для выбранного прикуса; до этого на её
   // месте заглушка, а совсем без WebGL — плоская схема.
@@ -159,7 +152,7 @@ export function TeethSceneView({
                     setDentition(d);
                     setActiveFdi(null);
                   }}
-                  className={segment(dentition === d)}
+                  className={segmentClass(dentition === d)}
                 >
                   {t(d)}
                 </button>
@@ -204,7 +197,7 @@ export function TeethSceneView({
                       chart={chart}
                       dentition={dentition}
                       view={view}
-                      viewResets={viewResets}
+                      viewResets={resets}
                       activeFdi={activeFdi}
                       label={t("jaw3d")}
                       onToothClick={setActiveFdi}
@@ -216,24 +209,7 @@ export function TeethSceneView({
                       )}
                     />
                   </div>
-                  <div className="flex justify-center">
-                    <div className="flex rounded-xl border border-white/15 bg-white/5 p-0.5">
-                      {(["both", "upper", "lower"] as const).map((v) => (
-                        <button
-                          key={v}
-                          type="button"
-                          onClick={() => {
-                            setView(v);
-                            setViewResets((n) => n + 1);
-                          }}
-                          aria-pressed={view === v}
-                          className={segment(view === v)}
-                        >
-                          {t(`jawView.${v}`)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <JawViewToggle view={view} onSelect={select} />
                 </div>
               )}
               <p className="text-center text-[11px] text-slate-500">

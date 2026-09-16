@@ -174,7 +174,9 @@ GLB в `public/models/teeth/` собирает свой генератор `scri
 (окраска повторяет плоский `Tooth`); где стоит каждый зуб на дуге —
 [archLayout.ts](src/components/odontogram/archLayout.ts). Общие рендерер, кэш моделей
 и покраска — `scene3d.ts`. `glb` исключён из matcher'а middleware. Живьём сцену
-смотрят на `/dev/odontogram`: там `TeethSceneView` на моках, без входа.
+смотрят на `/dev/odontogram`: там `TeethSceneView` на моках, без входа. На лендинге
+та же челюсть — `DemoJaw` в hero на демо-данных: three и модели качаются, только
+когда блок подъехал к экрану, без WebGL остаётся плоская `DemoOdontogram`.
 
 Модуль с логикой не называют как компонент в другом регистре (`jaw3d.ts` рядом с
 `Jaw3D.tsx`): Windows не различает регистр, TypeScript и webpack подставляют один

@@ -9,7 +9,7 @@ import { CONDITION_COLORS } from "@/lib/constants/teeth";
 import { cn } from "@/lib/utils";
 
 /** Static demo chart shown to anonymous visitors on the landing page. */
-const DEMO_CHART: ChartState = {
+export const DEMO_CHART: ChartState = {
   16: { surfaces: { O: { condition: "filling" } } },
   26: { surfaces: { O: { condition: "caries" }, M: { condition: "caries" } } },
   11: { surfaces: { V: { condition: "veneer" } } },

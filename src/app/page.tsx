@@ -7,7 +7,7 @@ import { formatMoney } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
-import { DemoOdontogram } from "@/components/landing/DemoOdontogram";
+import { DemoJaw } from "@/components/landing/DemoJaw";
 import { MappingRequestForm } from "@/components/landing/MappingRequestForm";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Logo } from "@/components/layout/Logo";
@@ -127,7 +127,7 @@ export default async function LandingPage() {
           {/* живая демо-одонтограмма прямо в hero */}
           <Reveal delay={120}>
             <p className="mb-2 text-small font-medium text-slate-400">{t("demoTitle")}</p>
-            <DemoOdontogram onDark />
+            <DemoJaw />
           </Reveal>
         </div>
       </section>
