@@ -4,13 +4,13 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Surface } from "@/lib/types/database";
 import {
-  CONDITION_COLORS,
   PERMANENT_LOWER,
   PERMANENT_UPPER,
   PRIMARY_LOWER,
   PRIMARY_UPPER,
 } from "@/lib/constants/teeth";
 import { cn } from "@/lib/utils";
+import { ConditionDot } from "./ConditionDot";
 import { Tooth } from "./Tooth";
 import { Legend } from "./Legend";
 import type { ChartState, ToothPart } from "./types";
@@ -29,7 +29,7 @@ export interface OdontogramProps {
   onlyTeeth?: number[];
   /** Тёмная подложка (hero лендинга). */
   onDark?: boolean;
-  /** С xl ряд растягивается по ширине контейнера вместо прокрутки — форма приёма в две колонки. */
+  /** С xl ряд вписывается в ширину контейнера вместо прокрутки — колонки формы приёма и деталей визита. */
   fitWidth?: boolean;
 }
 
@@ -180,10 +180,7 @@ export function Odontogram({
                 <span className={onDark ? "text-slate-400" : "text-muted"}>·</span>
                 <span>{partLabels[hovered.part]}</span>
                 <span className={onDark ? "text-slate-400" : "text-muted"}>·</span>
-                <span
-                  className="size-2.5 rounded-full ring-1 ring-inset ring-black/10"
-                  style={{ backgroundColor: CONDITION_COLORS[hoveredCondition] }}
-                />
+                <ConditionDot condition={hoveredCondition} />
                 <span className="font-medium">{t(`conditions.${hoveredCondition}`)}</span>
               </span>
             )}

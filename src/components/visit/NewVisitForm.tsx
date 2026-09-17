@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -36,6 +35,7 @@ import { Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ChartSkeleton } from "@/components/ui/Skeleton";
+import { BackLink } from "@/components/ui/BackLink";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { WIDE_QUERY, useMediaQuery } from "@/components/ui/useMediaQuery";
 import { ChevronLeftIcon, XIcon } from "@/components/icons";
@@ -378,8 +378,9 @@ export function NewVisitForm({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-3 md:gap-x-3">
-        <Link
+        <BackLink
           href={`/dentist/patient/${patient.id}`}
+          label={tcommon("back")}
           onClick={(e) => {
             // не терять накопленные записи приёма по случайному тапу «назад»
             if (items.length > 0) {
@@ -387,11 +388,7 @@ export function NewVisitForm({
               setLeaving(true);
             }
           }}
-          aria-label={tcommon("back")}
-          className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-slate-100 hover:text-ink"
-        >
-          <ChevronLeftIcon className="size-5" />
-        </Link>
+        />
         <div className="min-w-0 flex-1">
           <h1 className="text-h3 text-ink md:text-h2">{t("title")}</h1>
           <p className="truncate text-small text-muted">{patient.full_name}</p>

@@ -3,13 +3,9 @@
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ToothCondition } from "@/lib/types/database";
-import {
-  ALL_SURFACES,
-  CONDITION_COLORS,
-  quadrantKey,
-  toothPositionKey,
-} from "@/lib/constants/teeth";
-import { cn, formatDate } from "@/lib/utils";
+import { ALL_SURFACES, quadrantKey, toothPositionKey } from "@/lib/constants/teeth";
+import { formatDate } from "@/lib/utils";
+import { ConditionDot } from "./ConditionDot";
 import { recordDay } from "./state";
 import { ToothStage } from "./ToothStage";
 import type { SurfaceState, ToothPart, ToothState } from "./types";
@@ -35,15 +31,6 @@ function rowsOf(state: ToothState | undefined): Row[] {
 /** Состояние для заголовка: первое «нездоровое», иначе «здоров». */
 function headline(rows: Row[]): ToothCondition {
   return rows.find((r) => r.state.condition !== "healthy")?.state.condition ?? "healthy";
-}
-
-function Dot({ condition, className }: { condition: ToothCondition; className?: string }) {
-  return (
-    <span
-      className={cn("size-2.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10", className)}
-      style={{ backgroundColor: CONDITION_COLORS[condition] }}
-    />
-  );
 }
 
 /** Имя зуба для заголовка и aria-label: «Моляр · верхний правый». */
@@ -103,7 +90,7 @@ export function ToothDetails({
 
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-2.5 py-1.5 text-body font-medium">
-          <Dot condition={main} />
+          <ConditionDot condition={main} />
           {t(`conditions.${main}`)}
         </span>
         {rows.length === 0 && <p className="text-small text-slate-400">{t("noRecords")}</p>}
@@ -113,7 +100,7 @@ export function ToothDetails({
         <ul className="mt-4 divide-y divide-white/10 border-t border-white/10">
           {rows.map((r) => (
             <li key={r.part} className="flex items-start gap-3 py-2.5">
-              <Dot condition={r.state.condition} className="mt-2" />
+              <ConditionDot condition={r.state.condition} className="mt-2" />
               <div className="min-w-0 flex-1">
                 <p className="text-body">
                   <span className="font-medium">{t(`conditions.${r.state.condition}`)}</span>
