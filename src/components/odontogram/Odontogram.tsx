@@ -29,6 +29,8 @@ export interface OdontogramProps {
   onlyTeeth?: number[];
   /** Тёмная подложка (hero лендинга). */
   onDark?: boolean;
+  /** С xl ряд растягивается по ширине контейнера вместо прокрутки — форма приёма в две колонки. */
+  fitWidth?: boolean;
 }
 
 export function Odontogram({
@@ -40,6 +42,7 @@ export function Odontogram({
   compact,
   onlyTeeth,
   onDark,
+  fitWidth,
 }: OdontogramProps) {
   const t = useTranslations("odontogram");
   const [dentition, setDentition] = useState<Dentition>("permanent");
@@ -92,7 +95,8 @@ export function Odontogram({
           key={fdi}
           className={cn(
             "flex flex-col items-center gap-0.5",
-            compact ? "min-w-0" : "min-w-touch"
+            compact ? "min-w-0" : "min-w-touch",
+            fitWidth && "xl:min-w-0 xl:flex-1 xl:max-w-[56px]"
           )}
         >
           <Tooth
@@ -105,6 +109,7 @@ export function Odontogram({
             partLabels={partLabels}
             width={width}
             onDark={onDark}
+            fluid={fitWidth ? "xl" : undefined}
           />
           {/* номер зуба — мелко, вторичным цветом, всегда под зубом */}
           <span
@@ -195,7 +200,7 @@ export function Odontogram({
           onDark ? "border-white/10 bg-white/5" : "border-line bg-card"
         )}
       >
-        <div className="w-max min-w-full space-y-2">
+        <div className={cn("w-max min-w-full space-y-2", fitWidth && "xl:w-auto")}>
           {upper.length > 0 && (
             <div className="space-y-1">
               {!onlyTeeth && jawLabel("upperJaw")}

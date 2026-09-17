@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { MousePointerClick, RotateCw, TriangleAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type {
   AttachmentKind,
@@ -33,8 +34,10 @@ import type { ToothPart } from "@/components/odontogram/types";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { Card, CardTitle } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ChartSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { WIDE_QUERY, useMediaQuery } from "@/components/ui/useMediaQuery";
 import { ChevronLeftIcon, XIcon } from "@/components/icons";
 
 interface VisitItem {
@@ -60,6 +63,13 @@ interface PendingFile {
 
 let itemKey = 0;
 
+/**
+ * Форма приёма. На телефоне — лента карточек по шагам «Зубы / Приём / Оплата» с
+ * итогом над таб-баром. На широком экране (xl) шаг «Зубы» раскладывается в две
+ * колонки: слева схема и записи, справа закреплённая колонка с типом приёма и
+ * редактором записи — редактор не уезжает под сгиб, а курсор после выбора зуба
+ * сразу в поле процедуры, запись добавляется по Enter.
+ */
 export function NewVisitForm({
   patient,
   dentistId,
@@ -76,7 +86,14 @@ export function NewVisitForm({
   const locale = useLocale();
   const router = useRouter();
 
-  const { chart, records, loading: chartLoading } = useToothState(patient.id);
+  const {
+    chart,
+    records,
+    loading: chartLoading,
+    error: chartError,
+    refresh: refreshChart,
+  } = useToothState(patient.id);
+  const wide = useMediaQuery(WIDE_QUERY);
   const [leaving, setLeaving] = useState(false);
   const [step, setStep] = useState(0);
 
@@ -87,6 +104,7 @@ export function NewVisitForm({
   const [procedure, setProcedure] = useState("");
   const [price, setPrice] = useState("");
   const [note, setNote] = useState("");
+  const procedureRef = useRef<HTMLInputElement>(null);
 
   // --- accumulated records ---
   const [items, setItems] = useState<VisitItem[]>([]);
@@ -107,6 +125,17 @@ export function NewVisitForm({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // На широком экране редактор стоит рядом со схемой: после выбора зуба курсор сразу
+  // в «Процедуре», запись набирается с клавиатуры. Поле ставится в середину окна,
+  // чтобы и превью зуба, и кнопка были на экране. На телефоне фокус поднял бы
+  // клавиатуру поверх схемы, поэтому только там, где есть панель.
+  useEffect(() => {
+    const field = procedureRef.current;
+    if (!wide || editFdi === null || !field) return;
+    field.focus({ preventScroll: true });
+    field.scrollIntoView({ block: "center" });
+  }, [wide, editFdi]);
 
   const isMapping = visitType === "initial_mapping";
   // Первичная цифровизация — фиксированная услуга поверх записей по зубам
@@ -225,6 +254,11 @@ export function NewVisitForm({
     setNote("");
   }
 
+  function closeEditor() {
+    setEditFdi(null);
+    setEditParts([]);
+  }
+
   function removeItem(key: number) {
     setItems((prev) => prev.filter((i) => i.key !== key));
   }
@@ -264,8 +298,8 @@ export function NewVisitForm({
 
   async function save() {
     if (items.length === 0) {
+      goTo(0);
       setError(t("needRecords"));
-      setStep(0);
       return;
     }
     setSaving(true);
@@ -339,10 +373,11 @@ export function NewVisitForm({
 
   const partLabel = (p: ToothPart) => (p === "root" ? "R" : p);
   const lastStep = STEPS.length - 1;
+  const bulkCount = items.filter((i) => i.bulk).length;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-3 md:gap-x-3">
         <Link
           href={`/dentist/patient/${patient.id}`}
           onClick={(e) => {
@@ -352,13 +387,36 @@ export function NewVisitForm({
               setLeaving(true);
             }
           }}
-          className="flex size-11 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"
+          aria-label={tcommon("back")}
+          className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-slate-100 hover:text-ink"
         >
           <ChevronLeftIcon className="size-5" />
         </Link>
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900">{t("title")}</h1>
-          <p className="text-sm text-slate-500">{patient.full_name}</p>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-h3 text-ink md:text-h2">{t("title")}</h1>
+          <p className="truncate text-small text-muted">{patient.full_name}</p>
+        </div>
+
+        {/* Шаги — вкладки, а не мастер: к любому можно вернуться, ничего не теряя.
+            На телефоне — своей строкой во всю ширину, с md — справа от заголовка. */}
+        <div className="flex w-full rounded-xl border border-line bg-card p-0.5 md:w-auto">
+          {STEPS.map((s, i) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => goTo(i)}
+              aria-current={step === i ? "step" : undefined}
+              className={cn(
+                "min-h-touch flex-1 rounded-lg px-2 text-small font-medium transition-colors md:flex-none md:px-5",
+                step === i ? "bg-primary-600 text-white" : "text-muted hover:text-ink"
+              )}
+            >
+              {t(`steps.${s}`)}
+              {s === "teeth" && items.length > 0 && (
+                <span className="ml-1.5 tabular-nums opacity-80">{items.length}</span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -372,266 +430,286 @@ export function NewVisitForm({
         onCancel={() => setLeaving(false)}
       />
 
-      {/* Шаги — вкладки, а не мастер: к любому можно вернуться, ничего не теряя */}
-      <div className="flex rounded-xl border border-line bg-card p-0.5">
-        {STEPS.map((s, i) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => goTo(i)}
-            aria-current={step === i ? "step" : undefined}
-            className={cn(
-              "min-h-touch flex-1 rounded-lg px-2 text-small font-medium transition-colors",
-              step === i ? "bg-primary-600 text-white" : "text-muted hover:text-ink"
-            )}
-          >
-            {t(`steps.${s}`)}
-            {s === "teeth" && items.length > 0 && (
-              <span className="ml-1.5 tabular-nums opacity-80">{items.length}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
       {step === 0 && (
-        <>
-          <Card>
-            <Label htmlFor="visitType">{t("visitType")}</Label>
-            <Select
-              id="visitType"
-              value={visitType}
-              onChange={(e) => setVisitType(e.target.value as VisitType)}
-            >
-              {(["treatment", "initial_mapping", "checkup"] as const).map((vt) => (
-                <option key={vt} value={vt}>
-                  {t(`types.${vt}`)}
-                </option>
-              ))}
-            </Select>
-
-            {isMapping && (
-              <div className="mt-3 space-y-2.5 rounded-xl bg-primary-50 p-3">
-                <p className="text-sm text-primary-800">{t("mappingHint")}</p>
-                <div className="h-2 overflow-hidden rounded-full bg-white">
-                  <div
-                    className="h-full rounded-full bg-primary-600 transition-all"
-                    style={{ width: `${Math.round((knownTeeth.size / ALL_PERMANENT.length) * 100)}%` }}
-                  />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-sm font-semibold tabular-nums text-primary-800">
-                    {t("markedCount", { count: knownTeeth.size, total: ALL_PERMANENT.length })}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={markRestHealthy}
-                    disabled={chartLoading || knownTeeth.size >= ALL_PERMANENT.length}
-                  >
-                    {t("markRestHealthy")}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </Card>
-
-          <Card>
-            <p className="mb-3 text-sm text-slate-500">{t("hint")}</p>
-            {/* До загрузки истории карта показала бы все зубы здоровыми — врач мог бы
-                начать отмечать поверхности поверх ещё не пришедшего состояния. */}
-            {chartLoading ? (
-              <ChartSkeleton />
-            ) : (
-              <Odontogram chart={chart} onSurfaceClick={onSurfaceClick} selection={selection} />
-            )}
-          </Card>
-
-          {editFdi !== null && (
-            <Card className="border-primary-200 ring-1 ring-primary-100">
-              <div className="mb-3 flex items-center justify-between">
-                <CardTitle className="mb-0">
-                  {t("tooth")} {editFdi}
-                </CardTitle>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditFdi(null);
-                    setEditParts([]);
-                  }}
-                  className="flex size-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100"
-                >
-                  <XIcon className="size-5" />
-                </button>
-              </div>
-
-              <div className="space-y-3 sm:flex sm:items-start sm:gap-4 sm:space-y-0">
-                <ToothStage
-                  fdi={editFdi}
-                  state={previewState}
-                  className="h-40 bg-slate-900 sm:w-40 sm:shrink-0"
+        /* Две колонки с xl. Ниже обёртки колонок распадаются (display: contents), и
+           карточки выстраиваются в одну ленту в порядке order: тип приёма, схема,
+           редактор, записи — без дублирования разметки под два макета. */
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:gap-6">
+          <div className="contents xl:flex xl:min-w-0 xl:flex-1 xl:flex-col xl:gap-4">
+            <Card className="order-2 xl:order-none">
+              <p className="mb-3 text-small text-muted">{t("hint")}</p>
+              {/* До загрузки истории карта показала бы все зубы здоровыми — врач мог бы
+                  начать отмечать поверхности поверх ещё не пришедшего состояния. */}
+              {chartError ? (
+                <EmptyState
+                  icon={TriangleAlert}
+                  title={tcommon("error")}
+                  action={
+                    <Button variant="secondary" onClick={() => void refreshChart()}>
+                      <RotateCw className="size-4" />
+                      {tcommon("retry")}
+                    </Button>
+                  }
                 />
+              ) : chartLoading ? (
+                <ChartSkeleton />
+              ) : (
+                <Odontogram
+                  chart={chart}
+                  onSurfaceClick={onSurfaceClick}
+                  selection={selection}
+                  fitWidth
+                />
+              )}
+            </Card>
 
-                <div className="min-w-0 flex-1 space-y-3">
-                  {!isWhole && !isRoot && (
+            <Card className="order-4 xl:order-none">
+              <CardTitle>{t("records")}</CardTitle>
+              {items.length === 0 ? (
+                <p className="text-small text-muted">{t("noRecords")}</p>
+              ) : (
+                <ul className="divide-y divide-slate-100">
+                  {bulkCount > 0 && (
+                    <li className="flex items-center gap-3 py-2.5">
+                      <span
+                        className="inline-block size-4 shrink-0 rounded-md border border-slate-300"
+                        style={{ backgroundColor: CONDITION_COLORS.healthy }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-slate-900">
+                          {t("healthyBulk", { count: bulkCount })}
+                        </p>
+                        <p className="truncate text-xs text-slate-500">
+                          {items
+                            .filter((i) => i.bulk)
+                            .map((i) => i.tooth_fdi)
+                            .join(", ")}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setItems((prev) => prev.filter((i) => !i.bulk))}
+                        className="flex size-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600"
+                        aria-label={t("healthyBulk", { count: bulkCount })}
+                      >
+                        <XIcon className="size-4" />
+                      </button>
+                    </li>
+                  )}
+                  {items
+                    .filter((i) => !i.bulk)
+                    .map((item) => (
+                      <li key={item.key} className="flex items-center gap-3 py-2.5">
+                        <span
+                          className="inline-block size-4 shrink-0 rounded-md border border-slate-300"
+                          style={{ backgroundColor: CONDITION_COLORS[item.condition] }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-slate-900">
+                            {t("tooth")} {item.tooth_fdi}
+                            {item.surfaces.length > 0 && (
+                              <span className="text-slate-500"> · {item.surfaces.join(", ")}</span>
+                            )}{" "}
+                            · {tc(item.condition)}
+                          </p>
+                          {item.procedure && (
+                            <p className="truncate text-xs text-slate-500">{item.procedure}</p>
+                          )}
+                        </div>
+                        <span className="shrink-0 text-sm font-medium tabular-nums text-slate-700">
+                          {formatMoney(item.price, locale)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.key)}
+                          className="flex size-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600"
+                          aria-label={t("tooth") + " " + item.tooth_fdi}
+                        >
+                          <XIcon className="size-4" />
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </Card>
+          </div>
+
+          {/* Колонка не прилипает: редактор выше окна ноутбука, и прилипший столбец
+              прятал бы кнопку до самого низа страницы */}
+          <div className="contents xl:flex xl:w-80 xl:shrink-0 xl:flex-col xl:gap-4">
+            <Card className="order-1 xl:order-none">
+              <Label htmlFor="visitType">{t("visitType")}</Label>
+              <Select
+                id="visitType"
+                value={visitType}
+                onChange={(e) => setVisitType(e.target.value as VisitType)}
+              >
+                {(["treatment", "initial_mapping", "checkup"] as const).map((vt) => (
+                  <option key={vt} value={vt}>
+                    {t(`types.${vt}`)}
+                  </option>
+                ))}
+              </Select>
+
+              {isMapping && (
+                <div className="mt-3 space-y-2.5 rounded-xl bg-primary-50 p-3">
+                  <p className="text-sm text-primary-800">{t("mappingHint")}</p>
+                  <div className="h-2 overflow-hidden rounded-full bg-white">
+                    <div
+                      className="h-full rounded-full bg-primary-600 transition-all"
+                      style={{ width: `${Math.round((knownTeeth.size / ALL_PERMANENT.length) * 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm font-semibold tabular-nums text-primary-800">
+                      {t("markedCount", { count: knownTeeth.size, total: ALL_PERMANENT.length })}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={markRestHealthy}
+                      disabled={
+                        chartLoading || chartError !== null || knownTeeth.size >= ALL_PERMANENT.length
+                      }
+                    >
+                      {t("markRestHealthy")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Card>
+
+            {editFdi !== null ? (
+              <Card className="order-3 border-primary-200 ring-1 ring-primary-100 xl:order-none">
+                <div className="mb-3 flex items-center justify-between">
+                  <CardTitle className="mb-0">
+                    {t("tooth")} {editFdi}
+                  </CardTitle>
+                  <button
+                    type="button"
+                    onClick={closeEditor}
+                    aria-label={tcommon("close")}
+                    className="flex size-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100"
+                  >
+                    <XIcon className="size-5" />
+                  </button>
+                </div>
+
+                {/* Enter в любом поле добавляет запись — с клавиатуры за десктопом
+                    это быстрее, чем тянуться к кнопке */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    addItem();
+                  }}
+                  className="space-y-3 sm:flex sm:items-start sm:gap-4 sm:space-y-0 xl:block xl:space-y-3"
+                >
+                  <ToothStage
+                    fdi={editFdi}
+                    state={previewState}
+                    className="h-40 bg-slate-900 sm:w-40 sm:shrink-0 xl:w-full"
+                  />
+
+                  <div className="min-w-0 flex-1 space-y-3">
+                    {!isWhole && !isRoot && (
+                      <div>
+                        <Label>{t("selectedParts")}</Label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            centerSurface(editFdi),
+                            ...ALL_SURFACES.filter((s) => s !== "O" && s !== "I"),
+                            "root" as const,
+                          ].map((p) => (
+                            <button
+                              key={p}
+                              type="button"
+                              onClick={() =>
+                                setEditParts((prev) =>
+                                  prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
+                                )
+                              }
+                              className={cn(
+                                "min-h-touch min-w-touch rounded-xl border px-3 text-sm font-medium transition-colors",
+                                editParts.includes(p)
+                                  ? "border-primary-600 bg-primary-50 text-primary-700"
+                                  : "border-slate-200 bg-white text-slate-600"
+                              )}
+                            >
+                              {partLabel(p)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div>
-                      <Label>{t("selectedParts")}</Label>
-                      <div className="flex flex-wrap gap-1.5">
-                        {[
-                          centerSurface(editFdi),
-                          ...ALL_SURFACES.filter((s) => s !== "O" && s !== "I"),
-                          "root" as const,
-                        ].map((p) => (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() =>
-                              setEditParts((prev) =>
-                                prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
-                              )
-                            }
-                            className={cn(
-                              "min-h-touch min-w-touch rounded-xl border px-3 text-sm font-medium transition-colors",
-                              editParts.includes(p)
-                                ? "border-primary-600 bg-primary-50 text-primary-700"
-                                : "border-slate-200 bg-white text-slate-600"
-                            )}
-                          >
-                            {partLabel(p)}
-                          </button>
-                        ))}
+                      <Label htmlFor="condition">{t("condition")}</Label>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-block size-5 shrink-0 rounded-md border border-slate-300"
+                          style={{ backgroundColor: CONDITION_COLORS[condition] }}
+                        />
+                        <Select
+                          id="condition"
+                          value={condition}
+                          onChange={(e) => setCondition(e.target.value as ToothCondition)}
+                        >
+                          {ALL_CONDITIONS.map((c) => (
+                            <option key={c} value={c}>
+                              {tc(c)}
+                            </option>
+                          ))}
+                        </Select>
                       </div>
                     </div>
-                  )}
 
-                  <div>
-                    <Label htmlFor="condition">{t("condition")}</Label>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="inline-block size-5 shrink-0 rounded-md border border-slate-300"
-                        style={{ backgroundColor: CONDITION_COLORS[condition] }}
-                      />
-                      <Select
-                        id="condition"
-                        value={condition}
-                        onChange={(e) => setCondition(e.target.value as ToothCondition)}
-                      >
-                        {ALL_CONDITIONS.map((c) => (
-                          <option key={c} value={c}>
-                            {tc(c)}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div>
                       <Label htmlFor="procedure">{t("procedure")}</Label>
                       <Input
                         id="procedure"
+                        ref={procedureRef}
                         value={procedure}
                         onChange={(e) => setProcedure(e.target.value)}
                         placeholder={t("procedurePlaceholder")}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="price">{t("price")}</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        min={0}
-                        step="1000"
-                        inputMode="numeric"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="note">{t("note")}</Label>
-                    <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} />
-                  </div>
-
-                  <Button type="button" onClick={addItem} className="w-full sm:w-auto">
-                    {t("addRecord")}
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          <Card>
-            <CardTitle>{t("records")}</CardTitle>
-            {items.length === 0 ? (
-              <p className="text-sm text-slate-500">{t("noRecords")}</p>
-            ) : (
-              <ul className="divide-y divide-slate-100">
-                {items.filter((i) => i.bulk).length > 0 && (
-                  <li className="flex items-center gap-3 py-2.5">
-                    <span
-                      className="inline-block size-4 shrink-0 rounded-md border border-slate-300"
-                      style={{ backgroundColor: CONDITION_COLORS.healthy }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-900">
-                        {t("healthyBulk", { count: items.filter((i) => i.bulk).length })}
-                      </p>
-                      <p className="truncate text-xs text-slate-500">
-                        {items
-                          .filter((i) => i.bulk)
-                          .map((i) => i.tooth_fdi)
-                          .join(", ")}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setItems((prev) => prev.filter((i) => !i.bulk))}
-                      className="flex size-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600"
-                      aria-label={t("healthyBulk", { count: items.filter((i) => i.bulk).length })}
-                    >
-                      <XIcon className="size-4" />
-                    </button>
-                  </li>
-                )}
-                {items
-                  .filter((i) => !i.bulk)
-                  .map((item) => (
-                    <li key={item.key} className="flex items-center gap-3 py-2.5">
-                      <span
-                        className="inline-block size-4 shrink-0 rounded-md border border-slate-300"
-                        style={{ backgroundColor: CONDITION_COLORS[item.condition] }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-slate-900">
-                          {t("tooth")} {item.tooth_fdi}
-                          {item.surfaces.length > 0 && (
-                            <span className="text-slate-500"> · {item.surfaces.join(", ")}</span>
-                          )}{" "}
-                          · {tc(item.condition)}
-                        </p>
-                        {item.procedure && (
-                          <p className="truncate text-xs text-slate-500">{item.procedure}</p>
-                        )}
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <Label htmlFor="price">{t("price")}</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          min={0}
+                          step="1000"
+                          inputMode="numeric"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          placeholder="0"
+                        />
                       </div>
-                      <span className="shrink-0 text-sm font-medium tabular-nums text-slate-700">
-                        {formatMoney(item.price, locale)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.key)}
-                        className="flex size-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600"
-                        aria-label={t("tooth") + " " + item.tooth_fdi}
-                      >
-                        <XIcon className="size-4" />
-                      </button>
-                    </li>
-                  ))}
-              </ul>
+                      <div>
+                        <Label htmlFor="note">{t("note")}</Label>
+                        <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} />
+                      </div>
+                    </div>
+
+                    <Button type="submit" className="w-full sm:w-auto xl:w-full">
+                      {t("addRecord")}
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            ) : (
+              /* Пустая панель только на широком экране: на телефоне редактор
+                 появляется под схемой, и место под него держать незачем */
+              <Card className="order-3 hidden flex-col items-center justify-center gap-3 py-12 text-center xl:order-none xl:flex">
+                <MousePointerClick aria-hidden className="size-8 text-slate-400" strokeWidth={1.5} />
+                <p className="text-body text-muted">{t("noRecords")}</p>
+              </Card>
             )}
-          </Card>
-        </>
+          </div>
+        </div>
       )}
 
       {step === 1 && (
@@ -656,25 +734,28 @@ export function NewVisitForm({
               />
             </div>
           </div>
-          <div>
-            <Label htmlFor="complaint">{t("complaint")}</Label>
-            <Textarea id="complaint" value={complaint} onChange={(e) => setComplaint(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="diagnosis">{t("diagnosis")}</Label>
-            <Textarea id="diagnosis" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="treatment">{t("treatment")}</Label>
-            <Textarea id="treatment" value={treatment} onChange={(e) => setTreatment(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="recommendation">{t("recommendation")}</Label>
-            <Textarea
-              id="recommendation"
-              value={recommendation}
-              onChange={(e) => setRecommendation(e.target.value)}
-            />
+          {/* Текстовые поля парами с md: во всю ширину строка вырастала до 120+ знаков */}
+          <div className="space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+            <div>
+              <Label htmlFor="complaint">{t("complaint")}</Label>
+              <Textarea id="complaint" value={complaint} onChange={(e) => setComplaint(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="diagnosis">{t("diagnosis")}</Label>
+              <Textarea id="diagnosis" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="treatment">{t("treatment")}</Label>
+              <Textarea id="treatment" value={treatment} onChange={(e) => setTreatment(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="recommendation">{t("recommendation")}</Label>
+              <Textarea
+                id="recommendation"
+                value={recommendation}
+                onChange={(e) => setRecommendation(e.target.value)}
+              />
+            </div>
           </div>
           <div>
             <Label htmlFor="files">{tv("attachments")}</Label>
@@ -714,7 +795,8 @@ export function NewVisitForm({
                     <button
                       type="button"
                       onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
-                      className="text-slate-400 hover:text-red-600"
+                      aria-label={tcommon("delete")}
+                      className="flex size-9 items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600"
                     >
                       <XIcon className="size-4" />
                     </button>
@@ -727,52 +809,56 @@ export function NewVisitForm({
       )}
 
       {step === 2 && (
-        <Card className="space-y-3">
-          <div className="flex items-center justify-between text-body">
-            <span className="text-muted">{t("records")}</span>
-            <span className="font-medium tabular-nums">{items.length}</span>
-          </div>
-          {serviceFee > 0 && (
+        /* С md свод слева, статус оплаты справа: на всю ширину подпись и сумма
+           разъезжались по краям почти на метр экрана */
+        <Card className="md:grid md:grid-cols-2 md:gap-x-8">
+          <div className="space-y-3">
             <div className="flex items-center justify-between text-body">
-              <span className="text-muted">{t("mappingService")}</span>
-              <span className="font-medium tabular-nums">{formatMoney(serviceFee, locale)}</span>
+              <span className="text-muted">{t("records")}</span>
+              <span className="font-medium tabular-nums">{items.length}</span>
             </div>
-          )}
-          <div className="flex items-center justify-between text-body">
-            <span className="text-muted">{t("subtotal")}</span>
-            <span className="font-medium tabular-nums">{formatMoney(subtotal, locale)}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex shrink-0 rounded-xl border border-line bg-card p-0.5">
-              {(["percent", "amount"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setDiscountMode(m)}
-                  className={cn(
-                    "min-h-touch rounded-lg px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
-                    discountMode === m ? "bg-primary-600 text-white" : "text-muted hover:text-ink"
-                  )}
-                >
-                  {m === "percent" ? "%" : t("subtotal")}
-                </button>
-              ))}
+            {serviceFee > 0 && (
+              <div className="flex items-center justify-between text-body">
+                <span className="text-muted">{t("mappingService")}</span>
+                <span className="font-medium tabular-nums">{formatMoney(serviceFee, locale)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-body">
+              <span className="text-muted">{t("subtotal")}</span>
+              <span className="font-medium tabular-nums">{formatMoney(subtotal, locale)}</span>
             </div>
-            <Input
-              type="number"
-              min={0}
-              inputMode="numeric"
-              className="flex-1"
-              value={discountValue}
-              onChange={(e) => setDiscountValue(e.target.value)}
-              placeholder={t("discount")}
-              aria-label={t("discount")}
-            />
-            <span className="shrink-0 text-small tabular-nums text-muted">
-              −{Math.round(discountPercent * 10) / 10}%
-            </span>
+            <div className="flex items-center gap-2">
+              <div className="flex shrink-0 rounded-xl border border-line bg-card p-0.5">
+                {(["percent", "amount"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setDiscountMode(m)}
+                    className={cn(
+                      "min-h-touch rounded-lg px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
+                      discountMode === m ? "bg-primary-600 text-white" : "text-muted hover:text-ink"
+                    )}
+                  >
+                    {m === "percent" ? "%" : t("subtotal")}
+                  </button>
+                ))}
+              </div>
+              <Input
+                type="number"
+                min={0}
+                inputMode="numeric"
+                className="flex-1"
+                value={discountValue}
+                onChange={(e) => setDiscountValue(e.target.value)}
+                placeholder={t("discount")}
+                aria-label={t("discount")}
+              />
+              <span className="shrink-0 text-small tabular-nums text-muted">
+                −{Math.round(discountPercent * 10) / 10}%
+              </span>
+            </div>
           </div>
-          <div>
+          <div className="mt-3 md:mt-0">
             <Label htmlFor="paymentStatus">{t("paymentStatus")}</Label>
             <Select
               id="paymentStatus"
@@ -789,13 +875,16 @@ export function NewVisitForm({
         </Card>
       )}
 
-      {error && (
-        <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-body text-danger">{error}</p>
-      )}
-
       {/* Закреплённая снизу панель: итог виден на любом шаге, а сохранение — на
-          последнем, где врач заодно сверяет скидку и статус оплаты. */}
-      <div className="sticky bottom-16 z-30 -mx-4 border-t border-line bg-card/95 px-4 py-3 backdrop-blur md:bottom-0 md:-mx-6 md:rounded-b-2xl md:px-6">
+          последнем, где врач заодно сверяет скидку и статус оплаты. На телефоне
+          прижата к таб-бару во всю ширину, с md — плавающая карточка по ширине
+          контента. Ошибка живёт тут же: она видна, где бы ни стояла прокрутка. */}
+      <div className="sticky bottom-16 z-30 -mx-4 border-t border-line bg-card/95 px-4 py-3 backdrop-blur md:bottom-4 md:mx-0 md:rounded-2xl md:border md:px-5 md:shadow-modal">
+        {error && (
+          <p role="alert" className="mb-2 rounded-xl bg-red-50 px-3.5 py-2 text-small text-danger">
+            {error}
+          </p>
+        )}
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-small text-muted">{t("total")}</p>

@@ -30,7 +30,10 @@ export function ChartSkeleton() {
       {[0, 1].map((row) => (
         <div key={row} className="flex justify-center gap-1 overflow-hidden">
           {Array.from({ length: 16 }).map((_, i) => (
-            <Skeleton key={i} className="h-[76px] w-[52px] shrink-0 rounded-xl" />
+            <Skeleton
+              key={i}
+              className="h-[76px] w-[52px] shrink-0 rounded-xl xl:w-auto xl:min-w-0 xl:max-w-[52px] xl:flex-1"
+            />
           ))}
         </div>
       ))}

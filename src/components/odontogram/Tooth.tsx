@@ -26,8 +26,10 @@ export interface ToothProps {
   width?: number;
   /** Тёмный фон (hero лендинга) — контуры светлее, чтобы зуб читался. */
   onDark?: boolean;
-  /** Растягивается на ширину родителя (сцена на телефоне); `width` игнорируется. */
-  fluid?: boolean;
+  /** Растягивается на ширину родителя (сцена на телефоне); `width` игнорируется.
+   *  "xl" — растягивается только с xl, ниже стоит фиксированная ширина
+   *  (форма приёма: в две колонки ряд иначе не влезает). */
+  fluid?: boolean | "xl";
 }
 
 const W = 52;
@@ -170,9 +172,13 @@ export const Tooth = memo(function Tooth({
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      width={fluid ? undefined : width}
-      height={fluid ? undefined : (width * H) / W}
-      className={cn("select-none overflow-visible", fluid && "h-auto w-full")}
+      width={fluid === true ? undefined : width}
+      height={fluid === true ? undefined : (width * H) / W}
+      className={cn(
+        "select-none overflow-visible",
+        fluid === true && "h-auto w-full",
+        fluid === "xl" && "xl:h-auto xl:w-full"
+      )}
       role={interactive ? "group" : "img"}
       aria-label={String(fdi)}
       onMouseLeave={handleLeave}

@@ -65,9 +65,12 @@ export function Sheet({
       // Прижат к низу явно (top:auto; bottom:0), а не через margin-top:auto:
       // у модального <dialog> с UA-стилем inset-block:0 auto-margin в Chrome
       // не отдаёт всё свободное место, и шторка повисала у верхнего края.
+      // Центр на sm+ — с !important: диалог лежит в top layer, но селектор
+      // родительского space-y-* до него дотягивается и ставит margin-top,
+      // отчего центрированный диалог уезжал к верхнему краю.
       className={cn(
         "bottom-0 top-auto m-0 max-h-sheet w-full max-w-full overflow-y-auto overscroll-contain rounded-t-3xl border-t p-0 shadow-modal backdrop:backdrop-blur-sm",
-        "sm:inset-0 sm:m-auto sm:max-w-md sm:rounded-2xl sm:border",
+        "sm:inset-0 sm:!m-auto sm:max-w-md sm:rounded-2xl sm:border",
         TONES[tone].dialog,
         closing ? "animate-sheet-down" : "animate-sheet-up"
       )}

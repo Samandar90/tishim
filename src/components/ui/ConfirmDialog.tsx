@@ -37,7 +37,9 @@ export function ConfirmDialog({
         e.preventDefault();
         if (!loading) onCancel();
       }}
-      className="w-[calc(100vw-2rem)] max-w-md rounded-2xl border border-line bg-card p-6 shadow-modal backdrop:bg-slate-900/50"
+      // !m-auto: селектор родительского space-y-* дотягивается до диалога в top layer
+      // и ставит margin-top, отчего центрированный диалог уезжал к верхнему краю
+      className="w-[calc(100vw-2rem)] max-w-md !m-auto rounded-2xl border border-line bg-card p-6 shadow-modal backdrop:bg-slate-900/50"
     >
       <h2 className="text-h3 text-ink">{title}</h2>
       {description && <p className="mt-2 text-body text-muted">{description}</p>}
