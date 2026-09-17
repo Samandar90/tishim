@@ -9,6 +9,7 @@ export const DEV_NAV: NavItem[] = [
   { href: "/dev/dentist", label: "Врач", icon: "users" },
   { href: "/dev/patient", label: "Пациент", icon: "chart" },
   { href: "/dev/visit", label: "Визит", icon: "calendar" },
+  { href: "/dev/requests", label: "Заявки", icon: "inbox" },
 ];
 
 let seq = 0;

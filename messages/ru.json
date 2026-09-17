@@ -433,6 +433,9 @@
     "statusLabel": "Статус заявки",
     "clinicTag": "Заявка клиники",
     "statusError": "Не удалось изменить статус. Попробуйте ещё раз.",
+    "copyPhone": "Скопировать номер",
+    "phoneCopied": "Номер скопирован",
+    "copyError": "Не удалось скопировать номер",
     "cancelConfirmTitle": "Отменить заявку?",
     "cancelConfirmText": "Заявка от {name} будет помечена как отменённая.",
     "statuses": {

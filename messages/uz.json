@@ -433,6 +433,9 @@
     "statusLabel": "Ariza holati",
     "clinicTag": "Klinika arizasi",
     "statusError": "Holatni o'zgartirib bo'lmadi. Qayta urinib ko'ring.",
+    "copyPhone": "Raqamni nusxalash",
+    "phoneCopied": "Raqam nusxalandi",
+    "copyError": "Raqamni nusxalab bo'lmadi",
     "cancelConfirmTitle": "Ariza bekor qilinsinmi?",
     "cancelConfirmText": "{name} arizasi bekor qilingan deb belgilanadi.",
     "statuses": {

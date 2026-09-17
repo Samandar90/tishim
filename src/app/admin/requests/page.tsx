@@ -1,21 +1,5 @@
-import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
-import type { MappingRequest } from "@/lib/types/database";
-import { RequestsTable } from "@/components/requests/RequestsTable";
+import { RequestsScreen } from "@/components/requests/RequestsScreen";
 
-export default async function AdminRequestsPage() {
-  const t = await getTranslations("requests");
-  const supabase = createClient();
-
-  const { data } = await supabase
-    .from("mapping_requests")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold text-slate-900">{t("title")}</h1>
-      <RequestsTable requests={(data ?? []) as MappingRequest[]} />
-    </div>
-  );
+export default function AdminRequestsPage() {
+  return <RequestsScreen />;
 }
