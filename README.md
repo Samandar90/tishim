@@ -1,36 +1,176 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Tishim — стоматологическая карта пациента
 
-## Getting Started
+Единая стоматологическая карта: пациент владеет своей историей лечения и сам
+решает, какой врач получит к ней доступ (по 6-значному коду). Врач видит
+одонтограмму, историю визитов и ведёт приёмы. Встроенный ИИ-скрининг фото.
 
-First, run the development server:
+## Стек
+
+- **Next.js 14** (App Router) + **TypeScript**
+- **Tailwind CSS** (mobile-first, основной цвет `#0891b2`)
+- **Supabase**: Postgres, Auth, Storage, RLS
+- **next-intl**: русский (по умолчанию) и узбекский
+- **Anthropic Claude** (vision) для ИИ-скрининга
+
+## Быстрый старт
+
+### 1. Supabase
+
+Вариант A — локально (рекомендуется для разработки):
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx supabase init --force   # если каталог supabase/ ещё не связан
+npx supabase start
+npx supabase db reset       # применит миграции из supabase/migrations и seed.sql
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Вариант B — облачный проект: выполните по порядку содержимое
+`supabase/migrations/00001_schema.sql`, `00002_rls.sql`, `00003_storage.sql`
+в SQL Editor. Seed (`supabase/seed.sql`) рассчитан на локальную разработку
+(создаёт пользователей прямо в `auth.users`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Для разработки удобно отключить подтверждение почты:
+Dashboard → Authentication → Providers → Email → выключить "Confirm email".
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### 2. Переменные окружения
 
-## Learn More
+```bash
+cp .env.local.example .env.local
+```
 
-To learn more about Next.js, take a look at the following resources:
+Заполните:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Project Settings → API
+  (для локального Supabase значения выводит `npx supabase start`)
+- `ANTHROPIC_API_KEY` — для `/api/ai-screening` (без него скрининг вернёт 503,
+  остальное приложение работает)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Сервисный ключ (`service_role`) приложению **не нужен** и нигде не используется —
+вся авторизация на RLS.
 
-## Deploy on Vercel
+### 3. Запуск
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm install
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Тестовые аккаунты (после seed)
+
+Пароль у всех: `password123`
+
+| Email | Роль |
+|---|---|
+| `admin@tishim.uz` | Админ (клиники, врачи, статистика) |
+| `dentist1@tishim.uz` | Стоматолог — Азиз Каримов, терапевт |
+| `dentist2@tishim.uz` | Стоматолог — Нилуфар Юсупова, ортопед |
+| `patient1@tishim.uz` | Пациент с историей: кариес → пломбы → коронка/удаление |
+| `patient2@tishim.uz` | Пациент: имплант, предстоящий визит, долг |
+| `patient3@tishim.uz` | Пациент с отозванным доступом |
+
+## Дизайн-система
+
+Токены живут в [tailwind.config.ts](tailwind.config.ts) и [globals.css](src/app/globals.css);
+компоненты собирают из них интерфейс — разовых классов и inline-стилей быть не должно.
+
+- **Цвета**: `primary-600` (#0891b2) и `primary-700` для hover; `surface` (#f8fafc) —
+  фон, `card` — карточки, `ink`/`muted` — текст, `line` — границы,
+  `success`/`warning`/`danger` — семантика.
+- **Типографика**: Inter, шкала `text-h1` 30/36, `text-h2` 24/32, `text-h3` 18/28,
+  `text-body` 15/24, `text-small` 13/20. Заголовки — вес 600.
+- **Скругления**: карточки 16px (`rounded-2xl`), кнопки и поля 12px (`rounded-xl`).
+- **Тени**: только `shadow-card` у карточек и `shadow-modal` у диалогов; на кнопках теней нет.
+- **Кнопки**: `primary` / `secondary` / `ghost` / `danger`, высота 44px, проп `block`
+  растягивает на всю ширину.
+- **Иконки**: `lucide-react`, толщина линии 1.75.
+
+Общие блоки: `EmptyState` (пустые состояния), `Skeleton`/`ListSkeleton`/`ChartSkeleton`
+(загрузка), `Toast` (подтверждения), `ConfirmDialog` (необратимые действия),
+`Field` (поле с inline-ошибкой).
+
+## Архитектура
+
+### Состояние зуба
+
+Текущее состояние зуба **не хранится** отдельной таблицей — это последняя по
+`created_at` запись `tooth_records` для каждой пары (зуб, поверхность):
+
+- SQL-view `current_tooth_state` (`security_invoker`, RLS применяется);
+- на клиенте — хук `useToothState(patientId, atDate?)`: грузит историю один раз
+  и умеет показывать карту на любую дату (слайдер истории без перезапросов).
+
+### Проверка безопасности
+
+RLS проверялся сквозным набором запросов от имени разных ролей (пациент, врач
+без доступа, врач с отозванным доступом, аноним). Что гарантировано:
+
+- пациент не читает ни визиты, ни зубы, ни профиль, ни коды другого пациента;
+- врач без активной строки `patient_access` не видит карту, и **сразу после
+  отзыва доступ пропадает** (проверено на живой БД);
+- таблицу `access_codes` не читает никто, кроме владельца-пациента;
+- заявки видят только админ и флагманский врач;
+- аноним видит ровно три вещи: настройки (цена, телефон), клиники и профиль
+  **флагманского** врача — это нужно лендингу. Профили пациентов и остальных
+  врачей анониму недоступны (закрыто миграцией `00006`).
+
+Скрипт проверки не входит в репозиторий; воспроизвести можно запросами к
+`/rest/v1/...` с токенами тестовых аккаунтов.
+
+### Доступ к данным (RLS)
+
+- Пациент: SELECT/UPDATE только своих строк (`patient_id = auth.uid()`).
+- Стоматолог: чтение/запись карт пациента только при активной строке
+  `patient_access` (`status = 'active'`); проверка — `security definer`-функцией
+  `has_active_access()`.
+- Коды доступа: генерация и погашение только через RPC
+  (`generate_access_code`, `redeem_access_code`) — врач никогда не читает
+  таблицу кодов напрямую. Код живёт 15 минут и одноразовый.
+- Админ-статистика — только агрегаты через RPC `get_admin_stats`.
+- Storage: приватные бакеты `attachments` и `ai-images` с политиками по папке
+  пациента; выдача файлов — по signed URL.
+
+### Бизнес-модель (этап 1)
+
+Один флагманский врач (`dentists.is_featured`, максимум один — enforced частичным
+уникальным индексом + RPC `set_featured_dentist`). Платная услуга — «Первичная
+цифровизация карты» (`visits.visit_type = 'initial_mapping'`, цена в
+`app_settings.initial_mapping_price`): после неё у пациента заполнены все 32 зуба.
+Доступ пациента к карте — бесплатный навсегда. Заявки с публичного лендинга
+пишутся в `mapping_requests` (INSERT разрешён анонимам), их видят админ и
+флагманский врач. Таблица `subscriptions` — задел этапа 2, без оплаты.
+
+### Основные маршруты
+
+| Маршрут | Кто | Что |
+|---|---|---|
+| `/` | публично | лендинг: демо-одонтограмма, цена, врач, форма заявки, FAQ (ru/uz) |
+| `/dashboard` | пациент | одонтограмма + слайдер истории, ближайший визит, долг; при пустой карте — форма записи на цифровизацию |
+| `/visits`, `/visits/[id]` | пациент | список и детали визитов, мини-одонтограмма, вложения |
+| `/access` | пациент | генерация кода, список врачей, отзыв доступа |
+| `/ai-check` | пациент | ИИ-скрининг фото (не диагноз!) |
+| `/dentist` | врач | пациенты с доступом, поиск, онбординг профиля |
+| `/dentist/access` | врач | ввод кода пациента |
+| `/dentist/patient/[id]` | врач | карта пациента, история, «Новый приём» |
+| `/dentist/patient/[id]/new-visit` | врач | приём: тип визита, клики по одонтограмме → записи → автосумма → скидка; режим цифровизации со счётчиком «X из 32» и кнопкой «Остальные — здоровы» |
+| `/dentist/requests` | featured-врач | заявки на цифровизацию, статусы, tel:-ссылки, бейдж новых в меню |
+| `/admin` | админ | статистика, клиники |
+| `/admin/dentists` | админ | врачи: клиника, назначение флагмана |
+| `/admin/requests` | админ | заявки на цифровизацию |
+| `/admin/settings` | админ | цена цифровизации, контактный телефон |
+| `/dev/odontogram` | только dev | превью одонтограммы на моках |
+
+### Одонтограмма
+
+`components/odontogram/Tooth.tsx` — один SVG-зуб: коронка из 5 кликабельных
+полигонов (центр O/I + трапеции M/D/V/L) и корни (1 для передних, 2 для нижних
+моляров, 3 для верхних). Цвета состояний — в `lib/constants/teeth.ts`.
+`Odontogram.tsx` — 32 зуба FDI (18→11|21→28 / 48→41|31→38), переключатель
+«постоянные/молочные», горизонтальный скролл на мобильном, тач-зона ≥44px.
+
+### ИИ-скрининг
+
+`POST /api/ai-screening` — сервер скачивает фото пациента из приватного бакета
+(под RLS-сессией пользователя), отправляет в Claude (`claude-opus-5`) со строгой
+JSON-схемой ответа и серверным фолбэком на случай отказа классификаторов.
+Результат сохраняется в `ai_screenings`. В интерфейсе всегда показывается
+дисклеймер: «Предварительная оценка, не является диагнозом. Обратитесь к врачу».
