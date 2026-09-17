@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { createRateLimiter } from "@/lib/rateLimit";
 import type { AiScreeningResult, UrgencyLevel } from "@/lib/types/database";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const MAX_IMAGES = 3;
+
+// Каждый вызов — платный запрос к модели с фотографиями, а зарегистрироваться может
+// кто угодно: без лимита скрипт в цикле сжигает бюджет API. Два уровня:
+// частота — в памяти процесса, ловит и неудачные вызовы, которые следа в базе не
+// оставляют; сутки — по сохранённым проверкам в базе, переживает перезапуск.
+const BURST_LIMIT = 5;
+const BURST_WINDOW_MS = 10 * 60 * 1000;
+const DAILY_LIMIT = 10;
+const takeBurstSlot = createRateLimiter({ limit: BURST_LIMIT, windowMs: BURST_WINDOW_MS });
 const ALLOWED_MEDIA = ["image/jpeg", "image/png", "image/webp"] as const;
 type AllowedMedia = (typeof ALLOWED_MEDIA)[number];
 
@@ -64,6 +74,35 @@ export async function POST(request: Request) {
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: "ai_not_configured" }, { status: 503 });
+  }
+
+  // Проверка — функция пациента; врачу и админу тратить на неё бюджет незачем
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (profile?.role !== "patient") {
+    return NextResponse.json({ error: "patients_only" }, { status: 403 });
+  }
+
+  const burst = takeBurstSlot(user.id);
+  if (!burst.ok) {
+    return NextResponse.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(burst.retryAfterMs / 1000)) } }
+    );
+  }
+
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count: usedToday, error: countError } = await supabase
+    .from("ai_screenings")
+    .select("id", { count: "exact", head: true })
+    .eq("patient_id", user.id)
+    .gte("created_at", dayAgo);
+  // не смогли посчитать — отказываем: лимит, который молча пропускает при сбое, не лимит
+  if (countError || (usedToday ?? 0) >= DAILY_LIMIT) {
+    return NextResponse.json({ error: "daily_limit" }, { status: 429 });
   }
 
   let body: { paths?: string[]; locale?: string };

@@ -276,6 +276,7 @@
     "removePhoto": "Suratni o'chirish",
     "history": "Oldingi tekshiruvlar",
     "error": "Tekshiruvni bajarib bo'lmadi. Qayta urinib ko'ring.",
+    "limit": "Qisqa vaqt ichida juda ko'p tekshiruv. Keyinroq urinib ko'ring.",
     "noFindings": "Aniq muammoli hududlar topilmadi"
   },
   "dentist": {
@@ -292,6 +293,7 @@
     "submitCode": "Ruxsat olish",
     "codeSuccess": "Ruxsat olindi! Bemor kartasi ochilmoqda…",
     "codeError": "Kod noto'g'ri yoki muddati o'tgan",
+    "codeLocked": "Juda ko'p noto'g'ri urinish. 15 daqiqadan so'ng qayta urinib ko'ring.",
     "newVisit": "Yangi qabul",
     "visitHistory": "Tashriflar tarixi",
     "patientCard": "Bemor kartasi",

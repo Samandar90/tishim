@@ -126,6 +126,10 @@ export default function AiCheckPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paths, locale }),
       });
+      if (res.status === 429) {
+        setError(t("limit"));
+        return;
+      }
       if (!res.ok) throw new Error(`api ${res.status}`);
       const data = (await res.json()) as { result: AiScreeningResult };
       setResult(data.result);

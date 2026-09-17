@@ -51,8 +51,10 @@ export default function DentistAccessPage() {
     const supabase = createClient();
     const { data, error } = await supabase.rpc("redeem_access_code", { p_code: code });
 
+    // Неверный код — пустой ответ; исключение too_many_attempts — блокировка после пяти
+    // неудач за 15 минут (миграция 00011), о ней врачу говорится прямо
     if (error || !data) {
-      setError(t("codeError"));
+      setError(error?.message.includes("too_many_attempts") ? t("codeLocked") : t("codeError"));
       setLoading(false);
       setDigits(Array(6).fill(""));
       inputs.current[0]?.focus();

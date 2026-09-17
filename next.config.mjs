@@ -112,13 +112,14 @@ const securityHeaders = [
 const nextConfig = {
   // Убирает x-powered-by: Next.js — бесплатная наводка для сканеров.
   poweredByHeader: false,
+  // Внешних источников у оптимизатора /_next/image нет намеренно. next/image в проекте
+  // не используется (везде <img>), а шаблон **.supabase.co пускал в оптимизатор файлы
+  // из ЛЮБОГО проекта Supabase — в том числе чужого, куда можно выложить что угодно.
+  // Это чистая поверхность атаки: к оптимизатору относится пачка уязвимостей Next
+  // (DoS, разрастание кэша на диске, разбор AVIF). Понадобится next/image для
+  // вложений — разрешать только хост своего проекта из NEXT_PUBLIC_SUPABASE_URL.
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**.supabase.co",
-      },
-    ],
+    remotePatterns: [],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
