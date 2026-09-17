@@ -160,8 +160,10 @@ export function DentistProfileSetup({
       <CardTitle>{needsSetup ? t("title") : t("editTitle")}</CardTitle>
       <p className="-mt-2 mb-4 text-small text-muted">{t("subtitle")}</p>
 
-      <form onSubmit={save} className="space-y-4">
-        <Field label={t("photo")} hint={t("photoHint")} error={photoError}>
+      {/* С lg короткие поля парами, фото, «О себе» и кнопки — во всю ширину: в одну
+          колонку форма из шести полей не помещалась в экран ноутбука */}
+      <form onSubmit={save} className="grid gap-4 lg:grid-cols-2 lg:gap-x-6">
+        <Field label={t("photo")} hint={t("photoHint")} error={photoError} className="lg:col-span-2">
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -204,7 +206,7 @@ export function DentistProfileSetup({
           />
         </Field>
 
-        <Field label={t("bio")} htmlFor="bio" hint={t("bioHint")}>
+        <Field label={t("bio")} htmlFor="bio" hint={t("bioHint")} className="lg:col-span-2">
           <Textarea
             id="bio"
             maxLength={600}
@@ -229,9 +231,11 @@ export function DentistProfileSetup({
           </Select>
         </Field>
 
-        {error && <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-body text-danger">{error}</p>}
+        {error && (
+          <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-body text-danger lg:col-span-2">{error}</p>
+        )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 lg:col-span-2">
           <Button type="submit" loading={loading} disabled={uploading}>
             {t("save")}
           </Button>

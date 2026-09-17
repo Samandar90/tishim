@@ -6,7 +6,8 @@ import type { NavItem } from "@/components/layout/NavTabs";
 /** Боковое меню каркаса: dev-страницы ссылаются друг на друга. */
 export const DEV_NAV: NavItem[] = [
   { href: "/dev/odontogram", label: "Карта", icon: "tooth" },
-  { href: "/dev/patient", label: "Пациент", icon: "users" },
+  { href: "/dev/dentist", label: "Врач", icon: "users" },
+  { href: "/dev/patient", label: "Пациент", icon: "chart" },
   { href: "/dev/visit", label: "Визит", icon: "calendar" },
 ];
 

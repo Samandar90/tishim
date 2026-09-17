@@ -87,17 +87,20 @@ export function Field({
   hint,
   children,
   htmlFor,
+  className,
 }: {
   label: string;
   error?: string | null;
   hint?: string;
   children: React.ReactNode;
   htmlFor?: string;
+  /** Место поля в сетке формы, например `lg:col-span-2`. */
+  className?: string;
 }) {
   const fallbackId = useId();
   const id = htmlFor ?? fallbackId;
   return (
-    <div>
+    <div className={className}>
       <Label htmlFor={id}>{label}</Label>
       {children}
       {error ? (

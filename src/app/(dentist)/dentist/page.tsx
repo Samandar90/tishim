@@ -1,14 +1,12 @@
-import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/auth";
-import { DentistProfileSetup } from "@/components/dentist/DentistProfileSetup";
-import { PatientList, type PatientRow } from "@/components/dentist/PatientList";
+import { DentistHomeView } from "@/components/dentist/DentistHome";
+import type { PatientRow } from "@/components/dentist/PatientList";
 
 export default async function DentistHomePage() {
   const session = await getSessionProfile();
   if (!session) return null;
 
-  const t = await getTranslations("dentist");
   const supabase = createClient();
 
   const { data: dentist } = await supabase
@@ -45,17 +43,12 @@ export default async function DentistHomePage() {
     }));
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold text-slate-900">{t("patientsTitle")}</h1>
-
-      <DentistProfileSetup
-        dentistId={dentist.id}
-        userId={session.user.id}
-        clinics={clinics ?? []}
-        initial={dentist}
-      />
-
-      <PatientList patients={patients} />
-    </div>
+    <DentistHomeView
+      dentistId={dentist.id}
+      userId={session.user.id}
+      clinics={clinics ?? []}
+      profile={dentist}
+      patients={patients}
+    />
   );
 }

@@ -1,12 +1,13 @@
 import { UserRound } from "lucide-react";
 import { cn, initials } from "@/lib/utils";
 
-type Size = "sm" | "lg";
+type Size = "sm" | "md" | "lg";
 
 // Размер и кегль задаются парой: text-small в шкале идёт после text-h3
 // и через className перебил бы его.
 const SIZES: Record<Size, string> = {
   sm: "size-9 text-small",
+  md: "size-11 text-body",
   lg: "size-14 text-h3",
 };
 
