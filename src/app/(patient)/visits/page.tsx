@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { CalendarDays } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/auth";
-import { VisitCard, type VisitListRow } from "@/components/visit/VisitCard";
+import { VisitList, type VisitListRow } from "@/components/visit/VisitList";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export default async function VisitsPage() {
@@ -32,11 +32,7 @@ export default async function VisitsPage() {
       {rows.length === 0 ? (
         <EmptyState icon={CalendarDays} title={t("empty")} />
       ) : (
-        <div className="space-y-3">
-          {rows.map((v) => (
-            <VisitCard key={v.id} visit={v} href={`/visits/${v.id}`} />
-          ))}
-        </div>
+        <VisitList visits={rows} hrefBase="/visits" />
       )}
     </div>
   );

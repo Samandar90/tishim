@@ -8,6 +8,7 @@ import { Stethoscope, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatUzPhone } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Field, Input, Label } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/layout/Logo";
@@ -70,11 +71,9 @@ export default function RegisterPage() {
         <Card className="w-full max-w-md p-6 text-center md:p-7">
           <h1 className="text-h2 text-ink">{t("confirmTitle")}</h1>
           <p className="mb-6 mt-2 text-body text-muted">{t("confirmText", { email })}</p>
-          <Link href="/login">
-            <Button variant="secondary" block>
-              {t("backToLogin")}
-            </Button>
-          </Link>
+          <ButtonLink href="/login" variant="secondary" block>
+            {t("backToLogin")}
+          </ButtonLink>
         </Card>
       </div>
     );

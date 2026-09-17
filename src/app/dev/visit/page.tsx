@@ -1,7 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
-import type { NavItem } from "@/components/layout/NavTabs";
 import {
   VisitDetailsView,
   type VisitAttachment,
@@ -9,37 +7,14 @@ import {
 } from "@/components/visit/VisitDetails";
 import { PERMANENT_LOWER, PERMANENT_UPPER } from "@/lib/constants/teeth";
 import type { ToothRecord } from "@/lib/types/database";
-import { cn } from "@/lib/utils";
+import { DevVariantNav } from "../DevVariantNav";
+import { DEV_NAV, mockRecord as rec } from "../mocks";
 
 /**
  * Детали визита на моках, без входа — только в dev (middleware + notFound).
  * Обёрнуто в настоящий AppShell: ширина колонки контента зависит от бокового меню,
  * и без него раскладку на 1024–1536 не оценить.
  */
-
-const NAV: NavItem[] = [
-  { href: "/dev/odontogram", label: "Карта", icon: "tooth" },
-  { href: "/dev/visit", label: "Визит", icon: "calendar" },
-];
-
-let seq = 0;
-function rec(tooth: number, patch: Partial<ToothRecord> = {}): ToothRecord {
-  seq += 1;
-  return {
-    id: `r${seq}`,
-    seq,
-    visit_id: "demo",
-    patient_id: "demo",
-    tooth_fdi: tooth,
-    surfaces: [],
-    condition: "healthy",
-    procedure: null,
-    note: null,
-    price: 0,
-    created_at: "2026-09-17T09:30:00.000Z",
-    ...patch,
-  };
-}
 
 const ALL_TEETH = [...PERMANENT_UPPER, ...PERMANENT_LOWER];
 
@@ -145,26 +120,13 @@ export default function VisitDevPage({ searchParams }: { searchParams: { v?: str
 
   return (
     <AppShell
-      items={NAV}
+      items={DEV_NAV}
       homeHref="/dev/visit"
       profile={{ full_name: "Демо Пациент", phone: "+998 90 000 00 00" }}
       roleLabel="Пациент"
     >
       <div className="space-y-4">
-        <nav className="flex flex-wrap gap-2 text-small">
-          {(Object.keys(VARIANTS) as VariantKey[]).map((v) => (
-            <Link
-              key={v}
-              href={`/dev/visit?v=${v}`}
-              className={cn(
-                "rounded-lg border border-line px-2.5 py-1",
-                v === key ? "bg-primary-600 text-white" : "bg-card text-muted hover:text-ink"
-              )}
-            >
-              {VARIANTS[v].label}
-            </Link>
-          ))}
-        </nav>
+        <DevVariantNav base="/dev/visit" variants={VARIANTS} current={key} />
         <VisitDetailsView visit={variant.visit} attachments={variant.attachments} backHref="/dev/odontogram" />
       </div>
     </AppShell>

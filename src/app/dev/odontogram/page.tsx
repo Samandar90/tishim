@@ -6,60 +6,14 @@ import { Odontogram } from "@/components/odontogram/Odontogram";
 import { TeethSceneView } from "@/components/odontogram/TeethScene";
 import { buildChartState, extractRecordDates } from "@/components/odontogram/state";
 import { NewVisitForm } from "@/components/visit/NewVisitForm";
-import type { Profile, ToothRecord } from "@/lib/types/database";
+import type { Profile } from "@/lib/types/database";
 import { Card, CardTitle } from "@/components/ui/Card";
+import { MOCK_CHART_RECORDS as MOCK } from "../mocks";
 
 /**
  * Dev-only static preview of the odontogram on mock data.
  * Unreachable in production (middleware + notFound guard).
  */
-
-let seq = 0;
-function rec(
-  daysAgo: number,
-  tooth: number,
-  condition: ToothRecord["condition"],
-  surfaces: ToothRecord["surfaces"] = [],
-  procedure = "",
-  price = 0
-): ToothRecord {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  seq += 1;
-  return {
-    id: String(seq),
-    seq,
-    visit_id: "v" + daysAgo,
-    patient_id: "demo",
-    tooth_fdi: tooth,
-    surfaces,
-    condition,
-    procedure,
-    note: null,
-    price,
-    created_at: d.toISOString(),
-  };
-}
-
-const MOCK: ToothRecord[] = [
-  // a year ago: lots of caries
-  rec(365, 16, "caries", ["O"]),
-  rec(365, 26, "caries", ["O", "M"]),
-  rec(365, 36, "pulpitis"),
-  rec(365, 11, "caries", ["V"]),
-  rec(365, 47, "caries", ["O", "D"]),
-  // 6 months ago: treatment
-  rec(180, 16, "filling", ["O"], "Пломба", 300000),
-  rec(180, 26, "filling", ["O", "M"], "Пломба", 350000),
-  rec(180, 36, "root_canal", [], "Эндодонтия", 800000),
-  rec(180, 11, "veneer", ["V"], "Винир", 1200000),
-  // 2 months ago: prosthetics + extraction
-  rec(60, 36, "crown", [], "Коронка", 1500000),
-  rec(60, 47, "extracted", [], "Удаление", 400000),
-  rec(60, 18, "missing"),
-  rec(60, 24, "implant", [], "Имплантация", 5000000),
-  rec(60, 33, "periodontitis"),
-];
 
 // Форма приёма на выдуманном пациенте: история под анонимом не загрузится (RLS),
 // сохранить нельзя — страница только для просмотра шагов и превью без входа врачом.

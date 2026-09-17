@@ -5,12 +5,17 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "md" | "lg";
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+/** Внешний вид кнопки — общий для <button> и для ссылки-кнопки (ButtonLink). */
+export interface ButtonStyleProps {
   variant?: Variant;
   size?: Size;
-  loading?: boolean;
   /** На всю ширину контейнера — типично для мобильных форм. */
   block?: boolean;
+  className?: string;
+}
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, ButtonStyleProps {
+  loading?: boolean;
 }
 
 /** Три стиля: заливка, обводка, прозрачная. Теней на кнопках нет по дизайн-системе. */
@@ -26,23 +31,29 @@ const sizes: Record<Size, string> = {
   lg: "h-12 px-6 text-body",
 };
 
+export function buttonClasses({
+  variant = "primary",
+  size = "md",
+  block,
+  className,
+}: ButtonStyleProps): string {
+  return cn(
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors duration-150",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
+    "disabled:pointer-events-none disabled:opacity-50",
+    variants[variant],
+    sizes[size],
+    block && "w-full",
+    className
+  );
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    { className, variant = "primary", size = "md", loading, block, disabled, children, ...props },
-    ref
-  ) => (
+  ({ className, variant, size, loading, block, disabled, children, ...props }, ref) => (
     <button
       ref={ref}
       disabled={disabled || loading}
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors duration-150",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
-        "disabled:pointer-events-none disabled:opacity-50",
-        variants[variant],
-        sizes[size],
-        block && "w-full",
-        className
-      )}
+      className={buttonClasses({ variant, size, block, className })}
       {...props}
     >
       {loading && <Loader2 className="size-4 animate-spin" aria-hidden />}

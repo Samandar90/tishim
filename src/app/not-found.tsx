@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { ToothIcon } from "@/components/icons";
 
@@ -15,9 +14,9 @@ export default async function NotFound() {
         </span>
         <h1 className="mb-2 text-lg font-semibold text-slate-900">{t("notFoundTitle")}</h1>
         <p className="mb-5 text-sm text-slate-600">{t("notFoundText")}</p>
-        <Link href="/">
-          <Button className="w-full">{t("goHome")}</Button>
-        </Link>
+        <ButtonLink href="/" block>
+          {t("goHome")}
+        </ButtonLink>
       </Card>
     </div>
   );

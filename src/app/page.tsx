@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CalendarCheck, ClipboardList, Phone, ShieldCheck, Smartphone, Stethoscope } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getAppSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
 import { DemoJaw } from "@/components/landing/DemoJaw";
@@ -62,11 +61,13 @@ export default async function LandingPage() {
           <Logo onDark />
           <div className="flex items-center gap-2">
             <LocaleSwitcher onDark />
-            <Link href="/login">
-              <Button variant="secondary" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
-                {t("login")}
-              </Button>
-            </Link>
+            <ButtonLink
+              href="/login"
+              variant="secondary"
+              className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+            >
+              {t("login")}
+            </ButtonLink>
           </div>
         </div>
       </header>
@@ -96,21 +97,18 @@ export default async function LandingPage() {
             <p className="mt-4 max-w-lg text-[17px] leading-7 text-slate-300">{t("subtitle")}</p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a href="#request-form" className="sm:w-auto">
-                <Button size="lg" block className="sm:w-auto">
-                  {t("ctaBook")}
-                </Button>
-              </a>
-              <Link href="/login" className="sm:w-auto">
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  block
-                  className="border-white/20 bg-white/10 text-white hover:bg-white/20 sm:w-auto"
-                >
-                  {t("login")}
-                </Button>
-              </Link>
+              <ButtonLink href="#request-form" size="lg" block className="sm:w-auto">
+                {t("ctaBook")}
+              </ButtonLink>
+              <ButtonLink
+                href="/login"
+                size="lg"
+                variant="secondary"
+                block
+                className="border-white/20 bg-white/10 text-white hover:bg-white/20 sm:w-auto"
+              >
+                {t("login")}
+              </ButtonLink>
             </div>
 
             {settings.initialMappingPrice !== null && (
@@ -266,12 +264,10 @@ export default async function LandingPage() {
               <p className="mx-auto mt-2 max-w-md text-body text-slate-400">
                 {t("footerClinicText")}
               </p>
-              <a href="#request-form" className="mt-5 inline-block">
-                <Button>
-                  <ClipboardList className="size-4" />
-                  {t("footerClinicCta")}
-                </Button>
-              </a>
+              <ButtonLink href="#request-form" className="mt-5">
+                <ClipboardList className="size-4" />
+                {t("footerClinicCta")}
+              </ButtonLink>
             </div>
           </Reveal>
 
