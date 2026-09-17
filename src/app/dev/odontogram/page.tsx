@@ -73,7 +73,7 @@ export default function OdontogramDevPage() {
   const chart = buildChartState(MOCK, atDate);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 p-4">
+    <div className="mx-auto max-w-5xl space-y-4 p-4">
       {/* та же сцена, что у пациента на дашборде и у врача в карте, — на моках, без входа */}
       <TeethSceneView
         title="Карта (моки)"

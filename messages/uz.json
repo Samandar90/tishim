@@ -158,6 +158,8 @@
     "model3d": "{fdi}-tishning 3D modeli",
     "jaw3d": "Jag'larning 3D modeli",
     "jawHint": "Jag'ni barmoq bilan aylantiring, tafsilotlar uchun tishga bosing",
+    "jawHintWide": "Jag'ni sichqoncha bilan aylantiring, tishni bosing — tafsilotlar o'ng tomonda",
+    "pickTooth": "Modeldagi tishni tanlang",
     "jawView": {
       "both": "Ikkalasi",
       "upper": "Yuqori",
