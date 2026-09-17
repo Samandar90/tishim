@@ -53,7 +53,7 @@ export function DemoJaw() {
     <div className="space-y-3">
       <div
         ref={stageRef}
-        className="relative h-80 overflow-hidden rounded-2xl border border-white/10 bg-white/5 lg:h-96"
+        className="relative h-80 overflow-hidden rounded-2xl border border-white/10 bg-white/5 lg:h-stage-hero"
       >
         {!ready && <div aria-busy className="absolute inset-0 animate-pulse bg-white/5" />}
         {near && (
