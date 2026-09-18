@@ -19,7 +19,7 @@ export default async function AdminDentistsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-slate-900">{t("dentists")}</h1>
+      <h1 className="text-h2 text-ink md:text-h1">{t("dentists")}</h1>
       <DentistsPanel
         dentists={(dentists ?? []) as unknown as AdminDentistRow[]}
         clinics={clinics ?? []}

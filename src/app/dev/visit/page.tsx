@@ -102,6 +102,24 @@ const VARIANTS = {
     },
     attachments: [],
   },
+  child: {
+    label: "Молочные",
+    visit: {
+      ...BASE,
+      diagnosis: "Кариес молочных моляров, сменный прикус.",
+      subtotal: 400000,
+      total: 400000,
+      payment_status: "paid",
+      tooth_records: [
+        rec(55, { condition: "caries", surfaces: ["O"] }),
+        rec(54, { condition: "filling", surfaces: ["O", "D"], procedure: "Пломба", price: 200000 }),
+        rec(16, { condition: "healthy", procedure: "Герметизация фиссур", price: 200000 }),
+        rec(75, { condition: "extracted", procedure: "Удаление" }),
+        rec(84, { condition: "caries", surfaces: ["O"] }),
+      ],
+    },
+    attachments: [],
+  },
   bare: {
     label: "Пустой",
     visit: { ...BASE, visit_type: "checkup" },

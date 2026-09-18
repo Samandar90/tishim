@@ -8,6 +8,7 @@ import {
   PERMANENT_UPPER,
   PRIMARY_LOWER,
   PRIMARY_UPPER,
+  jawRow,
 } from "@/lib/constants/teeth";
 import { cn } from "@/lib/utils";
 import { ConditionDot } from "./ConditionDot";
@@ -68,11 +69,11 @@ export function Odontogram({
       ? [PERMANENT_UPPER, PERMANENT_LOWER]
       : [PRIMARY_UPPER, PRIMARY_LOWER];
 
-  const filterRow = (row: number[]) =>
-    onlyTeeth ? row.filter((fdi) => onlyTeeth.includes(fdi)) : row;
-
-  const upper = filterRow(upperRow);
-  const lower = filterRow(lowerRow);
+  // Список зубов (детали визита) показывается целиком, какого бы прикуса зубы ни были:
+  // переключателя прикуса в этом режиме нет, и отбор из рядов одного прикуса молча
+  // выкидывал молочные зубы — приём ребёнка оставался без схемы.
+  const upper = onlyTeeth ? jawRow(onlyTeeth, "upper") : upperRow;
+  const lower = onlyTeeth ? jawRow(onlyTeeth, "lower") : lowerRow;
 
   /** Состояние выбранной наведением части — для подписи в подсказке. */
   const hoveredCondition = useMemo(() => {

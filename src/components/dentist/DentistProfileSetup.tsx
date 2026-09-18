@@ -139,7 +139,8 @@ export function DentistProfileSetup({
         />
         <div className="min-w-0 flex-1">
           <p className="text-body font-medium text-ink">{t("editTitle")}</p>
-          <p className="truncate text-small text-muted">{t("editHint")}</p>
+          {/* до двух строк: в одну на телефоне от подсказки оставалось «Фото, стаж и о…» */}
+          <p className="line-clamp-2 text-small text-muted">{t("editHint")}</p>
         </div>
         {saved && (
           <span className="flex items-center gap-1 text-small text-success">
@@ -147,9 +148,10 @@ export function DentistProfileSetup({
             {t("saved")}
           </span>
         )}
-        <Button variant="secondary" onClick={() => setOpen(true)}>
+        {/* на телефоне — одна иконка: подпись отнимала у подсказки половину строки */}
+        <Button variant="secondary" onClick={() => setOpen(true)} aria-label={t("edit")}>
           <Pencil className="size-4" strokeWidth={1.75} />
-          {t("edit")}
+          <span className="hidden sm:inline">{t("edit")}</span>
         </Button>
       </Card>
     );

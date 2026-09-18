@@ -14,7 +14,7 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-slate-900">{t("title")}</h1>
+      <h1 className="text-h2 text-ink md:text-h1">{t("title")}</h1>
       <AdminTabs stats={(stats as AdminStats) ?? null} clinics={(clinics ?? []) as Clinic[]} />
     </div>
   );

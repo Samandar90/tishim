@@ -69,6 +69,27 @@ export function isUpperTooth(fdi: number): boolean {
   return q === 1 || q === 2 || q === 5 || q === 6;
 }
 
+/**
+ * Место зуба в ряду схемы слева направо, как смотрит врач: правая сторона пациента —
+ * слева. У молочного зуба то же место, что у постоянного, который вырастет на его
+ * месте (55 стоит там же, где 15), — так оба прикуса складываются в один ряд.
+ */
+export function toothRowIndex(fdi: number): number {
+  const q = quadrant(fdi);
+  const position = fdi % 10;
+  const patientRight = q === 1 || q === 4 || q === 5 || q === 8;
+  return patientRight ? 8 - position : 7 + position;
+}
+
+/** Зубы из списка, стоящие в одной челюсти, в порядке ряда; неизвестные номера отбрасываются. */
+export function jawRow(teeth: number[], jaw: "upper" | "lower"): number[] {
+  const known = new Set([...PERMANENT_UPPER, ...PERMANENT_LOWER, ...PRIMARY_UPPER, ...PRIMARY_LOWER]);
+  return Array.from(new Set(teeth))
+    .filter((fdi) => known.has(fdi) && isUpperTooth(fdi) === (jaw === "upper"))
+    // при равном месте постоянный раньше молочного: номер у него меньше
+    .sort((a, b) => toothRowIndex(a) - toothRowIndex(b) || a - b);
+}
+
 /** Mesial side faces the midline: right half of the mouth (quadrants 1,4,5,8) has mesial on the viewer's right. */
 export function isMesialOnRight(fdi: number): boolean {
   const q = quadrant(fdi);
