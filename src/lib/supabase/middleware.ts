@@ -1,16 +1,25 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/register"];
+/** Открыты анониму; вошедшего отсюда уводим в его кабинет. */
+const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
+/**
+ * Открыты всем, и вошедшего не уводим: новый пароль ставят с recovery-сессией из письма,
+ * а без сессии страница сама объяснит, что ссылка не сработала.
+ */
+const OPEN_PATHS = ["/reset-password"];
 
 /** Dev-песочница: открыта всем и не участвует в редиректах по роли. */
 function isDevSandbox(pathname: string) {
   return process.env.NODE_ENV === "development" && pathname.startsWith("/dev");
 }
 
-function isPublic(pathname: string) {
-  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+function matches(pathname: string, paths: string[]) {
+  return paths.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
+
+const isPublic = (pathname: string) => matches(pathname, PUBLIC_PATHS);
+const isOpen = (pathname: string) => matches(pathname, OPEN_PATHS);
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
@@ -45,7 +54,7 @@ export async function updateSession(request: NextRequest) {
 
   if (isDevSandbox(pathname)) return response;
 
-  if (!user && !isPublic(pathname) && pathname !== "/") {
+  if (!user && !isPublic(pathname) && !isOpen(pathname) && pathname !== "/") {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
