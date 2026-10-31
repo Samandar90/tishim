@@ -6,7 +6,7 @@
 
 ## Стек
 
-- **Next.js 14** (App Router) + **TypeScript**
+- **Next.js 15** (App Router, React 19) + **TypeScript**
 - **Tailwind CSS** (mobile-first, основной цвет `#0891b2`)
 - **Supabase**: Postgres, Auth, Storage, RLS
 - **next-intl**: русский (по умолчанию) и узбекский
@@ -71,7 +71,7 @@ npm run dev
 ## PWA
 
 Сайт ставится на домашний экран телефона и открывается без адресной строки:
-манифест — `src/app/manifest.ts`, иконки генерируются при сборке из логотипа
+манифест — route handler `src/app/manifest.webmanifest/route.ts`, иконки генерируются при сборке из логотипа
 (`src/app/icon.tsx`, `apple-icon.tsx`), offline-режима и service worker'а нет —
 все данные под сессией пользователя. На iPhone: Поделиться → «На экран Домой»;
 на Android Chrome предложит установку сам.

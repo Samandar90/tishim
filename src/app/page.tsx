@@ -24,7 +24,7 @@ interface FeaturedDentist {
 export default async function LandingPage() {
   const t = await getTranslations("landing");
   const locale = await getLocale();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [settings, { data: doctor }, { data: stats }] = await Promise.all([
     getAppSettings(),

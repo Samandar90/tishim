@@ -129,11 +129,15 @@ const VARIANTS = {
 
 type VariantKey = keyof typeof VARIANTS;
 
-export default function VisitDevPage({ searchParams }: { searchParams: { v?: string } }) {
+export default async function VisitDevPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ v?: string }>;
+}) {
   if (process.env.NODE_ENV !== "development") notFound();
 
-  const key: VariantKey =
-    searchParams.v && searchParams.v in VARIANTS ? (searchParams.v as VariantKey) : "treatment";
+  const { v } = await searchParams;
+  const key: VariantKey = v && v in VARIANTS ? (v as VariantKey) : "treatment";
   const variant = VARIANTS[key];
 
   return (

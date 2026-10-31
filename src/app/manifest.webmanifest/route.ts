@@ -2,20 +2,23 @@ import type { MetadataRoute } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 /**
- * Манифест локализован так же, как остальное приложение: Next ставит на
- * <link rel="manifest"> атрибут crossorigin="use-credentials", поэтому cookie
- * с локалью долетает и сюда. Путь исключён из matcher'а middleware — иначе
- * аноним получал бы 307 на /login вместо манифеста.
+ * Манифест локализован так же, как остальное приложение, — по cookie locale.
+ * Это обычный route handler, а не соглашение app/manifest.ts: для соглашения
+ * Next 15 сам рендерит <link rel="manifest"> и ставит на него
+ * crossorigin="use-credentials" только на превью Vercel. Без атрибута браузер
+ * запрашивает манифест без cookie, и он всегда уходил бы на языке по умолчанию.
+ * Ссылку с атрибутом рендерит корневой layout. Путь исключён из matcher'а
+ * middleware — иначе аноним получал бы 307 на /login вместо манифеста.
  *
  * Service worker'а нет намеренно: всё приложение живёт под RLS-сессией,
  * кэшировать медицинские данные на устройстве нельзя, а для установки на
  * домашний экран современным Chrome и Safari он не нужен.
  */
-export default async function manifest(): Promise<MetadataRoute.Manifest> {
+export async function GET() {
   const locale = await getLocale();
   const t = await getTranslations("meta");
 
-  return {
+  const manifest: MetadataRoute.Manifest = {
     id: "/",
     name: t("title"),
     short_name: "Tishim",
@@ -33,4 +36,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
       { src: "/icon/maskable-512", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
+
+  return Response.json(manifest, {
+    headers: { "Content-Type": "application/manifest+json" },
+  });
 }

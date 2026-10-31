@@ -6,7 +6,7 @@ export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "ru";
 
 export default getRequestConfig(async () => {
-  const cookieLocale = cookies().get("locale")?.value;
+  const cookieLocale = (await cookies()).get("locale")?.value;
   const locale: Locale = locales.includes(cookieLocale as Locale)
     ? (cookieLocale as Locale)
     : defaultLocale;

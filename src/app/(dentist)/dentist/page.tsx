@@ -7,7 +7,7 @@ export default async function DentistHomePage() {
   const session = await getSessionProfile();
   if (!session) return null;
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: dentist } = await supabase
     .from("dentists")

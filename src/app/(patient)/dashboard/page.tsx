@@ -47,7 +47,7 @@ export default async function DashboardPage() {
 
   const t = await getTranslations("dashboard");
   const locale = await getLocale();
-  const supabase = createClient();
+  const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
 
   const { count: recordsCount } = await supabase

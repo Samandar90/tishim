@@ -6,14 +6,15 @@ import { TeethScene } from "@/components/odontogram/TeethScene";
 import type { VisitListRow } from "@/components/visit/VisitList";
 import { SavedVisitToast } from "@/components/visit/SavedVisitToast";
 
-export default async function DentistPatientPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+export default async function DentistPatientPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
 
   // RLS: профиль читается, только пока у врача есть активный доступ к пациенту
   const { data: patient } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (!patient) notFound();
   const p = patient as Profile;

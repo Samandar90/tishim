@@ -10,7 +10,7 @@ export default async function VisitsPage() {
   if (!session) return null;
 
   const t = await getTranslations("visits");
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: visits } = await supabase
     .from("visits")

@@ -4,7 +4,7 @@ import { DentistsPanel, type AdminDentistRow } from "@/components/admin/Dentists
 
 export default async function AdminDentistsPage() {
   const t = await getTranslations("nav");
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: dentists }, { data: clinics }] = await Promise.all([
     supabase

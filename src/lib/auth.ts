@@ -15,7 +15,7 @@ export function homeFor(role: UserRole): string {
 }
 
 export async function getSessionProfile(): Promise<{ user: User; profile: Profile } | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

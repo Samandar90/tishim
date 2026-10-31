@@ -7,7 +7,7 @@ export interface AppSettings {
 
 /** Reads public app settings (price, contact phone). Works for anonymous visitors. */
 export async function getAppSettings(): Promise<AppSettings> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase.from("app_settings").select("key, value");
 
   const map = new Map<string, unknown>((data ?? []).map((r) => [r.key, r.value]));

@@ -158,11 +158,13 @@ next-intl **без префикса локали в URL**: язык берётс
 
 ### PWA
 
-Манифест — [src/app/manifest.ts](src/app/manifest.ts); иконки **генерируются на
+Манифест — route handler [src/app/manifest.webmanifest/route.ts](src/app/manifest.webmanifest/route.ts),
+а не соглашение `app/manifest.ts`: для соглашения Next 15 ставит на `<link rel=manifest>`
+`crossorigin="use-credentials"` только на превью Vercel, а без атрибута браузер запрашивает
+манифест без cookie `locale`. Ссылку с атрибутом рендерит корневой layout. Иконки **генерируются на
 сборке** Satori (`src/app/icon.tsx`, `apple-icon.tsx`) из `TOOTH_PATH` в
 `components/icons.tsx` — растровых иконок в репозитории нет, знак меняется в
-одном месте. Манифест локализуется через cookie `locale` — Next ставит на
-`<link rel=manifest>` `crossorigin=use-credentials`, cookies долетают. Пути
+одном месте. Манифест локализуется через cookie `locale`. Пути
 `manifest.webmanifest`, `icon/*`, `apple-icon` исключены из matcher'а middleware:
 иначе аноним получал на них 307 на `/login`, и установка не предлагалась.
 Service worker'а нет намеренно — приложение целиком под

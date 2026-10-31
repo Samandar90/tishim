@@ -9,7 +9,7 @@ import { RequestsTable } from "./RequestsTable";
  * формы лендинга) в браузер не уходит.
  */
 export async function RequestsScreen() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data } = await supabase
     .from("mapping_requests")

@@ -5,9 +5,10 @@ import { VisitDetails, type VisitFull } from "@/components/visit/VisitDetails";
 export default async function DentistVisitDetailsPage({
   params,
 }: {
-  params: { id: string; visitId: string };
+  params: Promise<{ id: string; visitId: string }>;
 }) {
-  const supabase = createClient();
+  const { id, visitId } = await params;
+  const supabase = await createClient();
 
   const { data: visit } = await supabase
     .from("visits")
@@ -15,13 +16,11 @@ export default async function DentistVisitDetailsPage({
       "*, dentist:dentists(specialization, profile:profiles(full_name), clinic:clinics(name, address)), " +
         "tooth_records(*), attachments(id, file_url, kind)"
     )
-    .eq("id", params.visitId)
-    .eq("patient_id", params.id)
+    .eq("id", visitId)
+    .eq("patient_id", id)
     .single();
 
   if (!visit) notFound();
 
-  return (
-    <VisitDetails visit={visit as unknown as VisitFull} backHref={`/dentist/patient/${params.id}`} />
-  );
+  return <VisitDetails visit={visit as unknown as VisitFull} backHref={`/dentist/patient/${id}`} />;
 }

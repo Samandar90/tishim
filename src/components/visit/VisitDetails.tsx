@@ -46,7 +46,7 @@ const STATUS_TONE: Record<PaymentStatus, "success" | "warning" | "danger"> = {
 
 /** Детали визита у пациента и у врача: подписывает вложения, разметка — в VisitDetailsView. */
 export async function VisitDetails({ visit, backHref }: { visit: VisitFull; backHref: string }) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Бакет вложений приватный: ссылка подписывается на час. Файл, который подписать
   // не удалось, пропускается — иначе в сетке осталась бы пустая ячейка.

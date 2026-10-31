@@ -21,7 +21,8 @@ export default defineConfig({
     css: false,
     server: {
       deps: {
-        // next-intl 3.26 не отдаёт условие "import" в exports — резолвится CJS-бандл.
+        // next-intl 4 — чистый ESM и импортирует "next/navigation" без расширения, а у
+        // next нет exports-карты: родной загрузчик Node такой импорт не разрешает, vite — да.
         // Сейчас работает и без инлайна, но он обязателен, как только появится
         // next-intl/navigation (createNavigation). Держим превентивно.
         inline: ["next-intl", "use-intl"],

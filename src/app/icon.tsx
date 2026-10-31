@@ -9,7 +9,7 @@ export const runtime = "edge";
 /**
  * Иконки PWA генерируются на сборке из того же контура, что и логотип —
  * растровых файлов в репозитории нет, менять знак нужно в одном месте.
- * Маршруты: /icon/192, /icon/512, /icon/maskable-512 (их читает manifest.ts).
+ * Маршруты: /icon/192, /icon/512, /icon/maskable-512 (их читает manifest.webmanifest/route.ts).
  */
 const VARIANTS = [
   { id: "192", size: 192, maskable: false },

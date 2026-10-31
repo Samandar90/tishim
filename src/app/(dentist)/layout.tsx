@@ -7,7 +7,7 @@ import type { NavItem } from "@/components/layout/NavTabs";
 export default async function DentistLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await requireRole("dentist");
   const t = await getTranslations("nav");
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: dentist } = await supabase
     .from("dentists")

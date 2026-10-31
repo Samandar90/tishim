@@ -31,7 +31,7 @@ export default async function AccessPage() {
 
   const t = await getTranslations("access");
   const locale = await getLocale();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data } = await supabase
     .from("patient_access")

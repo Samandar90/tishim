@@ -4,8 +4,9 @@ import { getAppSettings } from "@/lib/settings";
 import type { Profile } from "@/lib/types/database";
 import { NewVisitForm } from "@/components/visit/NewVisitForm";
 
-export default async function NewVisitPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+export default async function NewVisitPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -21,7 +22,7 @@ export default async function NewVisitPage({ params }: { params: { id: string } 
 
   // RLS: readable only with active access
   const [{ data: patient }, settings] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", params.id).single(),
+    supabase.from("profiles").select("*").eq("id", id).single(),
     getAppSettings(),
   ]);
   if (!patient) notFound();

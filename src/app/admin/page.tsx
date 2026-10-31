@@ -5,7 +5,7 @@ import { AdminTabs, type AdminStats } from "@/components/admin/AdminTabs";
 
 export default async function AdminPage() {
   const t = await getTranslations("admin");
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: stats }, { data: clinics }] = await Promise.all([
     supabase.rpc("get_admin_stats"),
