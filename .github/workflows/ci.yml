@@ -18,9 +18,9 @@ jobs:
     name: Типы, линт, тесты
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           # Версия закреплена в .nvmrc, а не диапазоном из engines.
           # engines говорит про минимум (Supabase требует >=22), .nvmrc — про
