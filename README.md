@@ -87,13 +87,16 @@ npm run dev
 В облачном проекте это настраивается руками один раз, иначе ссылки из писем не сработают:
 
 1. Authentication → URL Configuration: **Site URL** = адрес сайта, в **Redirect URLs** добавить
-   `https://<домен>/**`. Без этого Supabase подставит Site URL вместо `redirectTo`.
-2. Authentication → Email Templates → Reset Password: вставить содержимое
-   `supabase/templates/recovery.html` (ссылка с `token_hash` работает в любом браузере; шаблон
-   по умолчанию даёт PKCE-ссылку с `code`, которая срабатывает только в том браузере, где письмо
-   запрашивали, — её обработчик тоже понимает).
-3. Для настоящих пользователей — свой SMTP (Authentication → SMTP Settings): встроенная почта
-   Supabase ограничена несколькими письмами в час.
+   `https://<домен>/**`. Без этого Supabase подставит Site URL вместо `redirectTo`. Сделано
+   для https://tishim.onrender.com 2026-10-31 — с этого момента «Забыли пароль?» на проде работает
+   со стандартным письмом Supabase: его ссылка одноразовая и срабатывает только в том браузере,
+   где письмо запрашивали (PKCE-код), открытая один раз — сгорает.
+2. Свой SMTP (Authentication → SMTP Settings). Без него панель не даёт править шаблоны писем,
+   а встроенная почта Supabase ограничена несколькими письмами в час. Самый короткий путь без
+   домена — пароль приложения Google и `smtp.gmail.com`.
+3. После SMTP — Authentication → Email Templates → Reset Password: вставить содержимое
+   `supabase/templates/recovery.html`. Ссылка с `token_hash` работает в любом браузере и не
+   сгорает от предпросмотра; обработчик понимает оба варианта.
 
 ## Дизайн-система
 
