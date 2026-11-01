@@ -30,6 +30,7 @@ const BASE: VisitFull = {
   discount_percent: 0,
   total: 0,
   payment_status: "unpaid",
+  paid_amount: 0,
   next_visit_date: null,
   dentist: {
     specialization: "Терапевт",
@@ -82,7 +83,7 @@ const VARIANTS = {
       diagnosis: "Первичный осмотр, карта заполнена по всем 32 зубам.",
       subtotal: 150000,
       total: 150000,
-      payment_status: "paid",
+      payment_status: "paid", paid_amount: 1,
       tooth_records: [
         ...PROBLEMS,
         ...ALL_TEETH.filter((fdi) => !PROBLEM_TEETH.has(fdi)).map((fdi) => rec(fdi)),
@@ -97,7 +98,7 @@ const VARIANTS = {
       visit_type: "initial_mapping",
       subtotal: 150000,
       total: 150000,
-      payment_status: "paid",
+      payment_status: "paid", paid_amount: 1,
       tooth_records: ALL_TEETH.map((fdi) => rec(fdi, { procedure: "Осмотр" })),
     },
     attachments: [],
@@ -109,7 +110,7 @@ const VARIANTS = {
       diagnosis: "Кариес молочных моляров, сменный прикус.",
       subtotal: 400000,
       total: 400000,
-      payment_status: "paid",
+      payment_status: "paid", paid_amount: 1,
       tooth_records: [
         rec(55, { condition: "caries", surfaces: ["O"] }),
         rec(54, { condition: "filling", surfaces: ["O", "D"], procedure: "Пломба", price: 200000 }),

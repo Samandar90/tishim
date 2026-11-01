@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { MousePointerClick, RotateCw, TriangleAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -24,7 +24,7 @@ import {
   WHOLE_TOOTH_CONDITIONS,
   centerSurface,
 } from "@/lib/constants/teeth";
-import { cn, calcTotal, formatMoney, resolveDiscountPercent } from "@/lib/utils";
+import { cn, calcTotal, formatMoney, resolveDiscountPercent, todayLocal } from "@/lib/utils";
 import { useToothState } from "@/hooks/useToothState";
 import { Odontogram } from "@/components/odontogram/Odontogram";
 import { buildChartState } from "@/components/odontogram/state";
@@ -38,6 +38,15 @@ import { ChartSkeleton } from "@/components/ui/Skeleton";
 import { BackLink } from "@/components/ui/BackLink";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { WIDE_QUERY, useMediaQuery } from "@/components/ui/useMediaQuery";
+import { Sheet } from "@/components/ui/Sheet";
+import {
+  draftIsDirty,
+  draftKey,
+  paidFor,
+  stepForProblem,
+  validateVisit,
+  type VisitDraft,
+} from "./visitDraft";
 import { ChevronLeftIcon, XIcon } from "@/components/icons";
 
 interface VisitItem {
@@ -110,7 +119,7 @@ export function NewVisitForm({
   const [items, setItems] = useState<VisitItem[]>([]);
 
   // --- visit fields ---
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
   const [visitType, setVisitType] = useState<VisitType>("treatment");
   const [visitDate, setVisitDate] = useState(today);
   const [nextVisitDate, setNextVisitDate] = useState("");
@@ -121,10 +130,103 @@ export function NewVisitForm({
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("unpaid");
   const [discountMode, setDiscountMode] = useState<"percent" | "amount">("percent");
   const [discountValue, setDiscountValue] = useState("");
+  const [paidAmount, setPaidAmount] = useState("");
   const [files, setFiles] = useState<PendingFile[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmMapping, setConfirmMapping] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
+  // Тип приёма трогали руками — автоматика для пустой карты его больше не меняет
+  const typeTouched = useRef(false);
+  const restored = useRef(false);
+
+  // Черновик приёма живёт в sessionStorage: тап по нижней панели, свайп «назад» или
+  // перезагрузка раньше стирали всё набранное, а защищена была только стрелка «Назад».
+  useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
+    try {
+      const raw = sessionStorage.getItem(draftKey(patient.id));
+      if (!raw) return;
+      const d = JSON.parse(raw) as VisitDraft;
+      if (!draftIsDirty(d)) return;
+      setItems(d.items.map((i) => ({ ...i, key: ++itemKey }) as VisitItem));
+      setVisitType(d.visitType as VisitType);
+      typeTouched.current = true;
+      setVisitDate(d.visitDate);
+      setNextVisitDate(d.nextVisitDate);
+      setComplaint(d.complaint);
+      setDiagnosis(d.diagnosis);
+      setTreatment(d.treatment);
+      setRecommendation(d.recommendation);
+      setPaymentStatus(d.paymentStatus);
+      setDiscountMode(d.discountMode);
+      setDiscountValue(d.discountValue);
+      setPaidAmount(d.paidAmount);
+      setStep(d.step);
+      setDraftRestored(true);
+    } catch {
+      // битый черновик — просто начинаем заново
+    }
+  }, [patient.id]);
+
+  const draft = useMemo<VisitDraft>(
+    () => ({
+      items: items.map(({ key: _key, ...rest }) => rest),
+      visitType,
+      visitDate,
+      nextVisitDate,
+      complaint,
+      diagnosis,
+      treatment,
+      recommendation,
+      paymentStatus,
+      discountMode,
+      discountValue,
+      paidAmount,
+      step,
+    }),
+    [items, visitType, visitDate, nextVisitDate, complaint, diagnosis, treatment, recommendation, paymentStatus, discountMode, discountValue, paidAmount, step]
+  );
+  const dirty = draftIsDirty(draft) || files.length > 0;
+
+  useEffect(() => {
+    try {
+      if (draftIsDirty(draft)) sessionStorage.setItem(draftKey(patient.id), JSON.stringify(draft));
+      else sessionStorage.removeItem(draftKey(patient.id));
+    } catch {
+      // приватный режим без storage — черновика просто не будет
+    }
+  }, [draft, patient.id]);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
+  const discardDraft = useCallback(() => {
+    try {
+      sessionStorage.removeItem(draftKey(patient.id));
+    } catch {
+      // см. выше
+    }
+    setItems([]);
+    setComplaint("");
+    setDiagnosis("");
+    setTreatment("");
+    setRecommendation("");
+    setNextVisitDate("");
+    setDiscountValue("");
+    setPaidAmount("");
+    setPaymentStatus("unpaid");
+    setDraftRestored(false);
+    setStep(0);
+  }, [patient.id]);
 
   // На широком экране редактор стоит рядом со схемой: после выбора зуба курсор сразу
   // в «Процедуре», запись набирается с клавиатуры. Поле ставится в середину окна,
@@ -136,6 +238,13 @@ export function NewVisitForm({
     field.focus({ preventScroll: true });
     field.scrollIntoView({ block: "center" });
   }, [wide, editFdi]);
+
+  // У пациента ещё нет ни одной записи — почти наверняка это первичная цифровизация;
+  // раньше по умолчанию стояло «Лечение», и платную услугу легко было сохранить не тем типом.
+  useEffect(() => {
+    if (chartLoading || chartError || typeTouched.current) return;
+    if (records.length === 0) setVisitType("initial_mapping");
+  }, [chartLoading, chartError, records.length]);
 
   const isMapping = visitType === "initial_mapping";
   // Первичная цифровизация — фиксированная услуга поверх записей по зубам
@@ -181,6 +290,7 @@ export function NewVisitForm({
   );
 
   const total = useMemo(() => calcTotal(subtotal, discountPercent), [subtotal, discountPercent]);
+  const paidValue = paidFor(paymentStatus, total, paidAmount);
 
   const isWhole = WHOLE_TOOTH_CONDITIONS.includes(condition);
   const isRoot = ROOT_CONDITIONS.includes(condition);
@@ -296,12 +406,32 @@ export function NewVisitForm({
     window.scrollTo({ top: 0 });
   }
 
-  async function save() {
-    if (items.length === 0) {
-      goTo(0);
-      setError(t("needRecords"));
+  function save() {
+    const problem = validateVisit({
+      itemsCount: items.length,
+      visitDate,
+      nextVisitDate,
+      today,
+      paymentStatus,
+      paidAmount: paidValue,
+      total,
+    });
+    if (problem) {
+      goTo(stepForProblem(problem));
+      setError(t(problem));
       return;
     }
+    // Счётчик «X из 32» был, а проверки при сохранении не было: цифровизацию можно
+    // было закрыть с двадцатью зубами. Теперь — явное подтверждение.
+    if (isMapping && knownTeeth.size < ALL_PERMANENT.length) {
+      setConfirmMapping(true);
+      return;
+    }
+    void persist();
+  }
+
+  async function persist() {
+    setConfirmMapping(false);
     setSaving(true);
     setError(null);
 
@@ -322,6 +452,7 @@ export function NewVisitForm({
           discount_percent: discountPercent,
           total,
           payment_status: paymentStatus,
+          paid_amount: paidValue,
           next_visit_date: nextVisitDate || null,
         },
         p_records: items.map((i) => ({
@@ -358,6 +489,7 @@ export function NewVisitForm({
         failedUploads > 0 ? t("attachmentsFailed", { count: failedUploads }) : t("saved");
       // подтверждение показывает карта пациента — переживает переход между страницами
       sessionStorage.setItem("tishim:visit-saved", notice);
+      sessionStorage.removeItem(draftKey(patient.id));
       router.push(`/dentist/patient/${patient.id}`);
       router.refresh();
     } catch (e) {
@@ -371,6 +503,132 @@ export function NewVisitForm({
   const lastStep = STEPS.length - 1;
   const bulkCount = items.filter((i) => i.bulk).length;
 
+  // Редактор записи по зубу: на xl живёт в карточке рядом со схемой, ниже — в шторке.
+  // Одна разметка для обоих мест, поэтому собирается заранее.
+  const editor =
+    editFdi === null ? null : (
+      <>
+        <div className="mb-3 flex items-center justify-between">
+          <CardTitle className="mb-0">
+            {t("tooth")} {editFdi}
+          </CardTitle>
+          <button
+            type="button"
+            onClick={closeEditor}
+            aria-label={tcommon("close")}
+            className="flex size-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100"
+          >
+            <XIcon className="size-5" />
+          </button>
+        </div>
+
+        {/* Enter в любом поле добавляет запись — с клавиатуры за десктопом
+            это быстрее, чем тянуться к кнопке */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            addItem();
+          }}
+          className="space-y-3 sm:flex sm:items-start sm:gap-4 sm:space-y-0 xl:block xl:space-y-3"
+        >
+          <ToothStage
+            fdi={editFdi}
+            state={previewState}
+            className="h-40 bg-slate-900 sm:w-40 sm:shrink-0 xl:w-full"
+          />
+
+          <div className="min-w-0 flex-1 space-y-3">
+            {!isWhole && !isRoot && (
+              <div>
+                <Label>{t("selectedParts")}</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    centerSurface(editFdi),
+                    ...ALL_SURFACES.filter((s) => s !== "O" && s !== "I"),
+                    "root" as const,
+                  ].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() =>
+                        setEditParts((prev) =>
+                          prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
+                        )
+                      }
+                      className={cn(
+                        "min-h-touch min-w-touch rounded-xl border px-3 text-sm font-medium transition-colors",
+                        editParts.includes(p)
+                          ? "border-primary-600 bg-primary-50 text-primary-700"
+                          : "border-slate-200 bg-white text-slate-600"
+                      )}
+                    >
+                      {partLabel(p)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="condition">{t("condition")}</Label>
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block size-5 shrink-0 rounded-md border border-slate-300"
+                  style={{ backgroundColor: CONDITION_COLORS[condition] }}
+                />
+                <Select
+                  id="condition"
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value as ToothCondition)}
+                >
+                  {ALL_CONDITIONS.map((c) => (
+                    <option key={c} value={c}>
+                      {tc(c)}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="procedure">{t("procedure")}</Label>
+              <Input
+                id="procedure"
+                ref={procedureRef}
+                value={procedure}
+                onChange={(e) => setProcedure(e.target.value)}
+                placeholder={t("procedurePlaceholder")}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="price">{t("price")}</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  min={0}
+                  step="any"
+                  inputMode="numeric"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="note">{t("note")}</Label>
+                <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} />
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full sm:w-auto xl:w-full">
+              {t("addRecord")}
+            </Button>
+          </div>
+        </form>
+      </>
+    );
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-3 md:gap-x-3">
@@ -379,7 +637,7 @@ export function NewVisitForm({
           label={tcommon("back")}
           onClick={(e) => {
             // не терять накопленные записи приёма по случайному тапу «назад»
-            if (items.length > 0) {
+            if (dirty) {
               e.preventDefault();
               setLeaving(true);
             }
@@ -412,6 +670,29 @@ export function NewVisitForm({
           ))}
         </div>
       </div>
+
+      {draftRestored && (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-primary-50 px-3.5 py-2.5 text-small text-primary-800">
+          {t("draftRestored")}
+          <button
+            type="button"
+            onClick={discardDraft}
+            className="min-h-touch font-medium underline-offset-2 hover:underline"
+          >
+            {t("draftDiscard")}
+          </button>
+        </p>
+      )}
+
+      <ConfirmDialog
+        open={confirmMapping}
+        title={t("mappingIncompleteTitle")}
+        description={t("mappingIncomplete", { count: knownTeeth.size, total: ALL_PERMANENT.length })}
+        confirmLabel={t("saveAnyway")}
+        loading={saving}
+        onConfirm={() => void persist()}
+        onCancel={() => setConfirmMapping(false)}
+      />
 
       <ConfirmDialog
         open={leaving}
@@ -535,7 +816,10 @@ export function NewVisitForm({
               <Select
                 id="visitType"
                 value={visitType}
-                onChange={(e) => setVisitType(e.target.value as VisitType)}
+                onChange={(e) => {
+                  typeTouched.current = true;
+                  setVisitType(e.target.value as VisitType);
+                }}
               >
                 {(["treatment", "initial_mapping", "checkup"] as const).map((vt) => (
                   <option key={vt} value={vt}>
@@ -572,126 +856,9 @@ export function NewVisitForm({
               )}
             </Card>
 
-            {editFdi !== null ? (
+            {editFdi !== null && wide ? (
               <Card className="order-3 border-primary-200 ring-1 ring-primary-100 xl:order-none">
-                <div className="mb-3 flex items-center justify-between">
-                  <CardTitle className="mb-0">
-                    {t("tooth")} {editFdi}
-                  </CardTitle>
-                  <button
-                    type="button"
-                    onClick={closeEditor}
-                    aria-label={tcommon("close")}
-                    className="flex size-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100"
-                  >
-                    <XIcon className="size-5" />
-                  </button>
-                </div>
-
-                {/* Enter в любом поле добавляет запись — с клавиатуры за десктопом
-                    это быстрее, чем тянуться к кнопке */}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    addItem();
-                  }}
-                  className="space-y-3 sm:flex sm:items-start sm:gap-4 sm:space-y-0 xl:block xl:space-y-3"
-                >
-                  <ToothStage
-                    fdi={editFdi}
-                    state={previewState}
-                    className="h-40 bg-slate-900 sm:w-40 sm:shrink-0 xl:w-full"
-                  />
-
-                  <div className="min-w-0 flex-1 space-y-3">
-                    {!isWhole && !isRoot && (
-                      <div>
-                        <Label>{t("selectedParts")}</Label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[
-                            centerSurface(editFdi),
-                            ...ALL_SURFACES.filter((s) => s !== "O" && s !== "I"),
-                            "root" as const,
-                          ].map((p) => (
-                            <button
-                              key={p}
-                              type="button"
-                              onClick={() =>
-                                setEditParts((prev) =>
-                                  prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
-                                )
-                              }
-                              className={cn(
-                                "min-h-touch min-w-touch rounded-xl border px-3 text-sm font-medium transition-colors",
-                                editParts.includes(p)
-                                  ? "border-primary-600 bg-primary-50 text-primary-700"
-                                  : "border-slate-200 bg-white text-slate-600"
-                              )}
-                            >
-                              {partLabel(p)}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <Label htmlFor="condition">{t("condition")}</Label>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="inline-block size-5 shrink-0 rounded-md border border-slate-300"
-                          style={{ backgroundColor: CONDITION_COLORS[condition] }}
-                        />
-                        <Select
-                          id="condition"
-                          value={condition}
-                          onChange={(e) => setCondition(e.target.value as ToothCondition)}
-                        >
-                          {ALL_CONDITIONS.map((c) => (
-                            <option key={c} value={c}>
-                              {tc(c)}
-                            </option>
-                          ))}
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="procedure">{t("procedure")}</Label>
-                      <Input
-                        id="procedure"
-                        ref={procedureRef}
-                        value={procedure}
-                        onChange={(e) => setProcedure(e.target.value)}
-                        placeholder={t("procedurePlaceholder")}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <div>
-                        <Label htmlFor="price">{t("price")}</Label>
-                        <Input
-                          id="price"
-                          type="number"
-                          min={0}
-                          step="1000"
-                          inputMode="numeric"
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="note">{t("note")}</Label>
-                        <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <Button type="submit" className="w-full sm:w-auto xl:w-full">
-                      {t("addRecord")}
-                    </Button>
-                  </div>
-                </form>
+                {editor}
               </Card>
             ) : (
               /* Пустая панель только на широком экране: на телефоне редактор
@@ -705,6 +872,16 @@ export function NewVisitForm({
         </div>
       )}
 
+      {/* На телефоне и планшете редактор — шторка: раньше он открывался под схемой, ниже
+          экрана, и тап по зубу почти не давал отклика. Та же шторка, что у карты пациента. */}
+      <Sheet
+        open={editFdi !== null && !wide}
+        onClose={closeEditor}
+        label={editFdi !== null ? `${t("tooth")} ${editFdi}` : undefined}
+      >
+        {editor}
+      </Sheet>
+
       {step === 1 && (
         <Card className="space-y-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -713,6 +890,8 @@ export function NewVisitForm({
               <Input
                 id="visitDate"
                 type="date"
+                required
+                max={today}
                 value={visitDate}
                 onChange={(e) => setVisitDate(e.target.value)}
               />
@@ -722,6 +901,7 @@ export function NewVisitForm({
               <Input
                 id="nextVisitDate"
                 type="date"
+                min={visitDate}
                 value={nextVisitDate}
                 onChange={(e) => setNextVisitDate(e.target.value)}
               />
@@ -864,6 +1044,25 @@ export function NewVisitForm({
                 </option>
               ))}
             </Select>
+            {paymentStatus === "partial" && (
+              <div className="mt-3">
+                <Label htmlFor="paidAmount">{t("paidAmount")}</Label>
+                <Input
+                  id="paidAmount"
+                  type="number"
+                  min={0}
+                  max={total}
+                  step="any"
+                  inputMode="numeric"
+                  value={paidAmount}
+                  onChange={(e) => setPaidAmount(e.target.value)}
+                  placeholder="0"
+                />
+                <p className="mt-1 text-small text-muted">
+                  {t("remaining")}: {formatMoney(Math.max(total - paidValue, 0), locale)}
+                </p>
+              </div>
+            )}
           </div>
         </Card>
       )}

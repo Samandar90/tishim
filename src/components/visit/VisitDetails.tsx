@@ -8,6 +8,7 @@ import { BackLink } from "@/components/ui/BackLink";
 import { PaperclipIcon } from "@/components/icons";
 import { VisitTeeth } from "./VisitTeeth";
 import { needsWideChart } from "./recordGroups";
+import { VisitEditSheet } from "./VisitEditSheet";
 
 export interface VisitFull {
   id: string;
@@ -21,6 +22,7 @@ export interface VisitFull {
   discount_percent: number;
   total: number;
   payment_status: PaymentStatus;
+  paid_amount: number;
   next_visit_date: string | null;
   dentist: {
     specialization: string | null;
@@ -96,6 +98,9 @@ export async function VisitDetailsView({
   // есть ли что класть в левую колонку: схема (если она не ушла наверх) или записи врача
   const hasReading = (records.length > 0 && !wideChart) || hasNotes;
   const discount = Number(visit.discount_percent);
+  const paid = Number(visit.paid_amount);
+  // Правит только врач — у пациента backHref ведёт в его список визитов
+  const editable = backHref.startsWith("/dentist");
 
   const teethCard = records.length > 0 && (
     <Card>
@@ -118,6 +123,7 @@ export async function VisitDetailsView({
           {doctorLine && <p className="text-small text-muted">{doctorLine}</p>}
         </div>
         <Badge tone={STATUS_TONE[visit.payment_status]}>{t(`statuses.${visit.payment_status}`)}</Badge>
+        {editable && <VisitEditSheet visit={visit} />}
       </div>
 
       {/* Цифровизация — 16 зубов в ряду: такой схеме колонки мало, она идёт во всю
@@ -183,6 +189,20 @@ export async function VisitDetailsView({
                 <span>{t("total")}</span>
                 <span className="tabular-nums">{formatMoney(visit.total, locale)}</span>
               </div>
+              {visit.payment_status === "partial" && (
+                <>
+                  <div className="flex justify-between gap-3 text-muted">
+                    <span>{t("paidAmount")}</span>
+                    <span className="tabular-nums">{formatMoney(paid, locale)}</span>
+                  </div>
+                  <div className="flex justify-between gap-3 font-medium text-warning">
+                    <span>{t("remaining")}</span>
+                    <span className="tabular-nums">
+                      {formatMoney(Math.max(Number(visit.total) - paid, 0), locale)}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </Card>
 

@@ -259,7 +259,12 @@
       "initial_mapping": "Birlamchi raqamlashtirish",
       "treatment": "Davolash",
       "checkup": "Ko'rik"
-    }
+    },
+    "paidAmount": "Olindi",
+    "remaining": "Qoldiq",
+    "edit": "O'zgartirish",
+    "editTitle": "Qabulni o'zgartirish",
+    "editError": "O'zgarishlarni saqlab bo'lmadi. Qayta urinib ko'ring."
   },
   "access": {
     "title": "Kartaga ruxsat",
@@ -406,7 +411,17 @@
     "leaveConfirmTitle": "Saqlamasdan chiqilsinmi?",
     "leaveConfirmText": "Bu qabulning yozuvlari ({count}) yo'qoladi.",
     "leaveConfirm": "Chiqish",
-    "loadingChart": "Tishlar xaritasi yuklanmoqda…"
+    "loadingChart": "Tishlar xaritasi yuklanmoqda…",
+    "dateInvalid": "Qabul sanasi kelajakda bo'lishi mumkin emas.",
+    "nextDateInvalid": "Keyingi tashrif bu qabuldan oldin bo'lishi mumkin emas.",
+    "paidInvalid": "Qisman to'lovda olingan summani kiriting — noldan katta va jamidan kichik.",
+    "paidAmount": "Olindi",
+    "remaining": "Qoldiq",
+    "mappingIncompleteTitle": "Karta to'liq to'ldirilmagan",
+    "mappingIncomplete": "{total} tishdan {count} tasi belgilangan. Shundayligicha saqlaymizmi yoki qaytib qolganini belgilaysizmi?",
+    "saveAnyway": "Shundayligicha saqlash",
+    "draftRestored": "Saqlanmagan qabul tiklandi.",
+    "draftDiscard": "Qaytadan boshlash"
   },
   "admin": {
     "title": "Boshqaruv",
