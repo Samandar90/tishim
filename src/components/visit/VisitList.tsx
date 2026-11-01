@@ -6,6 +6,12 @@ import { formatDate, formatMoney } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
+/** Поля списка визитов — одни и те же у пациента и у врача; меняются вместе с типом строки. */
+export const VISIT_LIST_SELECT =
+  "id, visit_date, visit_type, diagnosis, treatment, subtotal, discount_percent, total, payment_status, " +
+  "dentist:dentists(specialization, profile:profiles(full_name), clinic:clinics(name)), " +
+  "attachments(count)";
+
 export interface VisitListRow {
   id: string;
   visit_date: string;

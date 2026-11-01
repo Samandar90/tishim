@@ -247,6 +247,8 @@ tsconfig и внутри `tests/` импорты переставали резо
 
 ## Деплой
 
-Push в `main` → GitHub Actions (typecheck, lint, тесты) и автодеплой Render.
+Push в `main` → GitHub Actions (typecheck, lint, тесты) и автодеплой Render. Второй
+workflow — `backup.yml`: ночной `pg_dump` облачной базы артефактом, работает только при
+секрете `SUPABASE_DB_URL` (см. README). `/api/health` — для Render и внешнего монитора.
 На `main` прогон CI не отменяется свежим push — отменённый прогон означал бы
 коммит, уехавший в прод без проверок.

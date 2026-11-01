@@ -3,7 +3,7 @@ import { CalendarDays } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { must } from "@/lib/supabase/result";
 import { getSessionProfile } from "@/lib/auth";
-import { VisitList, type VisitListRow } from "@/components/visit/VisitList";
+import { VISIT_LIST_SELECT, VisitList, type VisitListRow } from "@/components/visit/VisitList";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export default async function VisitsPage() {
@@ -16,11 +16,7 @@ export default async function VisitsPage() {
   const visits = await must(
     supabase
     .from("visits")
-    .select(
-      "id, visit_date, visit_type, diagnosis, treatment, subtotal, discount_percent, total, payment_status, " +
-        "dentist:dentists(specialization, profile:profiles(full_name), clinic:clinics(name)), " +
-        "attachments(count)"
-    )
+    .select(VISIT_LIST_SELECT)
     .eq("patient_id", session.profile.id)
     .order("visit_date", { ascending: false })
     .order("created_at", { ascending: false })

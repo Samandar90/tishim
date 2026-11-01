@@ -10,6 +10,11 @@ import { VisitTeeth } from "./VisitTeeth";
 import { needsWideChart } from "./recordGroups";
 import { VisitEditSheet } from "./VisitEditSheet";
 
+/** Поля деталей визита — у пациента и у врача; меняются вместе с VisitFull. */
+export const VISIT_FULL_SELECT =
+  "*, dentist:dentists(specialization, profile:profiles(full_name), clinic:clinics(name, address)), " +
+  "tooth_records(*), attachments(id, file_url, kind)";
+
 export interface VisitFull {
   id: string;
   visit_date: string;

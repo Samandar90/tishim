@@ -99,6 +99,17 @@ npm run dev
    `supabase/templates/recovery.html`. Ссылка с `token_hash` работает в любом браузере и не
    сгорает от предпросмотра; обработчик понимает оба варианта.
 
+## Резервные копии и мониторинг
+
+Бесплатный тариф Supabase копий не делает. Workflow `.github/workflows/backup.yml` раз в
+сутки снимает `pg_dump` схем public, auth и storage и хранит артефактом 30 дней — для этого в
+секретах репозитория нужен `SUPABASE_DB_URL` (строка подключения через session pooler с
+паролем; Project Settings → Database). Без секрета прогон пропускается. Восстановление:
+`pg_restore --no-owner --no-privileges -d <url> файл.dump`.
+
+Живость проверяется по `/api/health` (`?deep=1` — с запросом к базе). Бесплатный монитор
+вроде UptimeRobot раз в 5 минут на этот адрес заодно не даёт уснуть Render и Supabase.
+
 ## Дизайн-система
 
 Токены живут в [tailwind.config.ts](tailwind.config.ts) и [globals.css](src/app/globals.css);

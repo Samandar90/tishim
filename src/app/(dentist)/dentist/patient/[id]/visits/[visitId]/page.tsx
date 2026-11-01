@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { maybe } from "@/lib/supabase/result";
-import { VisitDetails, type VisitFull } from "@/components/visit/VisitDetails";
+import { VISIT_FULL_SELECT, VisitDetails, type VisitFull } from "@/components/visit/VisitDetails";
 
 export default async function DentistVisitDetailsPage({
   params,
@@ -14,10 +14,7 @@ export default async function DentistVisitDetailsPage({
   const visit = await maybe(
     supabase
       .from("visits")
-      .select(
-        "*, dentist:dentists(specialization, profile:profiles(full_name), clinic:clinics(name, address)), " +
-          "tooth_records(*), attachments(id, file_url, kind)"
-      )
+      .select(VISIT_FULL_SELECT)
       .eq("id", visitId)
       .eq("patient_id", id)
       .single()
