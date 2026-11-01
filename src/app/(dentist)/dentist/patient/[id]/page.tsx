@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { maybe, must } from "@/lib/supabase/result";
 import type { Profile } from "@/lib/types/database";
 import { PatientRecordView } from "@/components/dentist/PatientRecord";
 import { TeethScene } from "@/components/odontogram/TeethScene";
@@ -11,15 +12,12 @@ export default async function DentistPatientPage({ params }: { params: Promise<{
   const supabase = await createClient();
 
   // RLS: профиль читается, только пока у врача есть активный доступ к пациенту
-  const { data: patient } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const patient = await maybe(supabase.from("profiles").select("*").eq("id", id).single());
   if (!patient) notFound();
   const p = patient as Profile;
 
-  const { data: visits } = await supabase
+  const visits = await must(
+    supabase
     .from("visits")
     .select(
       "id, visit_date, visit_type, diagnosis, treatment, subtotal, discount_percent, total, payment_status, " +
@@ -28,14 +26,15 @@ export default async function DentistPatientPage({ params }: { params: Promise<{
     )
     .eq("patient_id", p.id)
     .order("visit_date", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+  );
 
   return (
     <>
       <SavedVisitToast />
       <PatientRecordView
         patient={p}
-        visits={(visits ?? []) as unknown as VisitListRow[]}
+        visits={visits as unknown as VisitListRow[]}
         scene={<TeethScene patientId={p.id} />}
       />
     </>

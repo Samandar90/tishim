@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CalendarDays, ClipboardList, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { mustCount } from "@/lib/supabase/result";
 import { getSessionProfile } from "@/lib/auth";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { TeethScene } from "@/components/odontogram/TeethScene";
@@ -50,10 +51,12 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  const { count: recordsCount } = await supabase
-    .from("tooth_records")
-    .select("id", { count: "exact", head: true })
-    .eq("patient_id", profile.id);
+  const recordsCount = await mustCount(
+    supabase
+      .from("tooth_records")
+      .select("id", { count: "exact", head: true })
+      .eq("patient_id", profile.id)
+  );
 
   // Пустая карта — приглашение на цифровизацию вместо пустой одонтограммы
   if (!recordsCount) {

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { maybe, mustCount } from "@/lib/supabase/result";
 import { AppShell } from "@/components/layout/AppShell";
 import type { NavItem } from "@/components/layout/NavTabs";
 
@@ -9,11 +10,9 @@ export default async function DentistLayout({ children }: { children: React.Reac
   const t = await getTranslations("nav");
   const supabase = await createClient();
 
-  const { data: dentist } = await supabase
-    .from("dentists")
-    .select("is_featured")
-    .eq("profile_id", profile.id)
-    .single();
+  const dentist = await maybe(
+    supabase.from("dentists").select("is_featured").eq("profile_id", profile.id).single()
+  );
 
   const items: NavItem[] = [
     { href: "/dentist", label: t("patients"), icon: "users", exact: true },
@@ -21,16 +20,18 @@ export default async function DentistLayout({ children }: { children: React.Reac
   ];
 
   if (dentist?.is_featured) {
-    const { count } = await supabase
-      .from("mapping_requests")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "new");
+    const count = await mustCount(
+      supabase
+        .from("mapping_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "new")
+    );
 
     items.push({
       href: "/dentist/requests",
       label: t("requests"),
       icon: "inbox",
-      badge: count ?? 0,
+      badge: count,
     });
   }
 

@@ -307,11 +307,11 @@ export function NewVisitForm({
 
     const supabase = createClient();
     try {
-      const { data: visit, error: visitError } = await supabase
-        .from("visits")
-        .insert({
+      // Визит и записи зубов уходят одной транзакцией (RPC create_visit): раньше при сбое
+      // на записях оставался пустой визит с суммой, а повтор создавал дубль.
+      const { data: visitId, error: visitError } = await supabase.rpc("create_visit", {
+        p_visit: {
           patient_id: patient.id,
-          dentist_id: dentistId,
           visit_type: visitType,
           visit_date: visitDate,
           complaint: complaint.trim() || null,
@@ -323,24 +323,20 @@ export function NewVisitForm({
           total,
           payment_status: paymentStatus,
           next_visit_date: nextVisitDate || null,
-        })
-        .select("id")
-        .single();
-      if (visitError || !visit) throw visitError ?? new Error("visit insert failed");
-
-      const { error: recordsError } = await supabase.from("tooth_records").insert(
-        items.map((i) => ({
-          visit_id: visit.id,
-          patient_id: patient.id,
+        },
+        p_records: items.map((i) => ({
           tooth_fdi: i.tooth_fdi,
           surfaces: i.surfaces,
           condition: i.condition,
           procedure: i.procedure || null,
           note: i.note || null,
           price: i.price,
-        }))
-      );
-      if (recordsError) throw recordsError;
+        })),
+      });
+      if (visitError || typeof visitId !== "string") {
+        throw visitError ?? new Error("create_visit returned no id");
+      }
+      const visit = { id: visitId };
 
       let failedUploads = 0;
       for (const { file, kind } of files) {

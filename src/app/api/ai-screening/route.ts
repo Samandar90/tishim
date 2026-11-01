@@ -16,7 +16,11 @@ const MAX_IMAGES = 3;
 const BURST_LIMIT = 5;
 const BURST_WINDOW_MS = 10 * 60 * 1000;
 const DAILY_LIMIT = 10;
+// Лимит на аккаунт не защищает счёт: аккаунты бесплатны и без капчи. Общий потолок —
+// в памяти процесса (сбрасывается перезапуском), предохранитель до spend limit в консоли.
+const GLOBAL_DAILY_LIMIT = 150;
 const takeBurstSlot = createRateLimiter({ limit: BURST_LIMIT, windowMs: BURST_WINDOW_MS });
+const takeGlobalSlot = createRateLimiter({ limit: GLOBAL_DAILY_LIMIT, windowMs: 24 * 60 * 60 * 1000 });
 const ALLOWED_MEDIA = ["image/jpeg", "image/png", "image/webp"] as const;
 type AllowedMedia = (typeof ALLOWED_MEDIA)[number];
 
@@ -92,6 +96,10 @@ export async function POST(request: Request) {
       { error: "rate_limited" },
       { status: 429, headers: { "Retry-After": String(Math.ceil(burst.retryAfterMs / 1000)) } }
     );
+  }
+
+  if (!takeGlobalSlot("all").ok) {
+    return NextResponse.json({ error: "daily_limit" }, { status: 429 });
   }
 
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();

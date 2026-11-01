@@ -55,6 +55,7 @@ select 'P11 выдать себе доступ врача напрямую (жд
 select 'P12 статистика админа (ждём DENIED)', audit_tmp.try($q$select public.get_admin_stats()$q$);
 select 'P13 назначить флагмана (ждём DENIED)', audit_tmp.try($q$select public.set_featured_dentist((select id from public.dentists limit 1))$q$);
 select 'P14 менять настройки цены (ждём DENIED/rows=0)', audit_tmp.try($q$update public.app_settings set value = '1'::jsonb$q$);
+select 'P14a create_visit пациентом (ждём DENIED)', audit_tmp.try($q$select public.create_visit(jsonb_build_object('patient_id', auth.uid()), '[{"tooth_fdi":11,"condition":"healthy","price":0}]'::jsonb)$q$);
 reset role;
 
 \echo === ПАЦИЕНТ patient3 (доступ dentist1 отозван): может ли сам вернуть статус active без кода?
@@ -87,6 +88,11 @@ select 'D20 сделать себя админом (ждём DENIED/rows=0)', au
 select 'D21 править профиль пациента (ждём rows=0)', audit_tmp.try($q$update public.profiles set full_name = 'взлом' where id = 'ba000000-0000-4000-8000-000000000001'$q$);
 select 'D22 флагман ли dentist1', (select is_featured from public.dentists where id = public.current_dentist_id());
 select 'D23 заявки с лендинга (флагман видит, остальные 0)', count(*) from public.mapping_requests;
+select 'D24 перевесить визит на другого пациента (ждём DENIED: колонка patient_id)', audit_tmp.try($q$update public.visits set patient_id = 'ba000000-0000-4000-8000-000000000002' where patient_id = 'ba000000-0000-4000-8000-000000000001'$q$);
+select 'D25 отметить оплату своего визита (ждём rows>0)', audit_tmp.try($q$update public.visits set payment_status = 'paid', paid_amount = total where patient_id = 'ba000000-0000-4000-8000-000000000001' and dentist_id = public.current_dentist_id()$q$);
+select 'D26 create_visit пациенту с доступом (ждём ok)', audit_tmp.try($q$select public.create_visit(jsonb_build_object('patient_id', 'ba000000-0000-4000-8000-000000000001', 'subtotal', 50000, 'total', 50000, 'payment_status', 'paid'), '[{"tooth_fdi":16,"surfaces":["O"],"condition":"filling","price":50000}]'::jsonb)$q$);
+select 'D27 create_visit пациенту без доступа (ждём DENIED)', audit_tmp.try($q$select public.create_visit(jsonb_build_object('patient_id', 'ba000000-0000-4000-8000-000000000003'), '[{"tooth_fdi":16,"condition":"healthy","price":0}]'::jsonb)$q$);
+select 'D28 create_visit с несходящейся суммой (ждём DENIED)', audit_tmp.try($q$select public.create_visit(jsonb_build_object('patient_id', 'ba000000-0000-4000-8000-000000000001', 'subtotal', 1), '[{"tooth_fdi":16,"condition":"healthy","price":0}]'::jsonb)$q$);
 reset role;
 
 \echo === ВРАЧ dentist2 (не флагман?)
@@ -99,7 +105,7 @@ reset role;
 \echo === АНОНИМ
 select audit_tmp.as_anon();
 select 'A1 профили (ждём только флагмана, <=1)', count(*) from public.profiles;
-select 'A2 профили пациентов (ждём 0)', count(*) from public.profiles where role = 'patient';
+select 'A2 профили пациентов по роли (ждём DENIED: колонка role анониму не выдана)', audit_tmp.try($q$select count(*) from public.profiles where role = 'patient'$q$);
 select 'A3 врачи (ждём только флагмана, <=1)', count(*) from public.dentists;
 select 'A4 визиты (ждём 0)', audit_tmp.try($q$select * from public.visits$q$);
 select 'A5 записи зубов (ждём 0)', audit_tmp.try($q$select * from public.tooth_records$q$);
@@ -110,6 +116,11 @@ select 'A9 прямая вставка заявки мимо RPC (ждём DENIE
 select 'A10 погасить код анонимом (ждём DENIED)', audit_tmp.try($q$select public.redeem_access_code('000000')$q$);
 select 'A11 настройки читаются (ждём >0)', count(*) from public.app_settings;
 select 'A12 ai_screenings (ждём 0)', audit_tmp.try($q$select * from public.ai_screenings$q$);
+select 'A13 телефон флагмана анониму (ждём DENIED: колонка)', audit_tmp.try($q$select phone, birth_date from public.profiles$q$);
+select 'A14 лицензия врача анониму (ждём DENIED: колонка)', audit_tmp.try($q$select license_number from public.dentists$q$);
+select 'A15 имя и специализация флагмана анониму (ждём ok)', audit_tmp.try($q$select p.full_name, d.specialization, d.bio from public.dentists d join public.profiles p on p.id = d.profile_id where d.is_featured$q$);
+select 'A16 create_visit анонимом (ждём DENIED)', audit_tmp.try($q$select public.create_visit('{}'::jsonb, '[]'::jsonb)$q$);
+select 'A17 вставка в visits анонимом (ждём DENIED)', audit_tmp.try($q$insert into public.visits (patient_id, dentist_id) values ('ba000000-0000-4000-8000-000000000001', (select id from public.dentists limit 1))$q$);
 reset role;
 
 rollback;

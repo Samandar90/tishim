@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { must } from "@/lib/supabase/result";
 import { getSessionProfile } from "@/lib/auth";
 import type { AccessStatus } from "@/lib/types/database";
 import { formatDate } from "@/lib/utils";
@@ -33,15 +34,17 @@ export default async function AccessPage() {
   const locale = await getLocale();
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const data = await must(
+    supabase
     .from("patient_access")
     .select(
       "id, status, granted_at, dentist:dentists(specialization, profile:profiles(full_name), clinic:clinics(name))"
     )
     .eq("patient_id", session.profile.id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+  );
 
-  const rows = (data ?? []) as unknown as AccessRow[];
+  const rows = data as unknown as AccessRow[];
 
   return (
     <div className="space-y-4">

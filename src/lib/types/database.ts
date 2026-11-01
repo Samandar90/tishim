@@ -124,6 +124,8 @@ export interface Visit {
   discount_percent: number;
   total: number;
   payment_status: PaymentStatus;
+  /** Сколько получено фактически; при «оплачено» равно total, при «не оплачено» — 0. */
+  paid_amount: number;
   next_visit_date: string | null;
   created_at: string;
   // joined
