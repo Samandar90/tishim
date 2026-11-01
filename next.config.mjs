@@ -122,7 +122,15 @@ const nextConfig = {
     remotePatterns: [],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // GLB-модели неизменны по содержимому: версию задаёт ?v= в scene3d, поэтому
+      // кэш на год и immutable — иначе 16 файлов перепроверялись при каждом открытии.
+      {
+        source: "/models/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
   },
 };
 

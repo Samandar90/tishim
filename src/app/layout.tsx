@@ -2,16 +2,30 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"], variable: "--font-inter" });
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
+  const locale = await getLocale();
+  const title = t("title");
+  const description = t("description");
   return {
-    title: t("title"),
-    description: t("description"),
+    metadataBase: new URL(siteUrl()),
+    title,
+    description,
     applicationName: "Tishim",
+    // Превью ссылки в Telegram и WhatsApp; картинку отдаёт opengraph-image.tsx
+    openGraph: {
+      type: "website",
+      siteName: "Tishim",
+      locale: locale === "uz" ? "uz_UZ" : "ru_RU",
+      title,
+      description,
+    },
+    twitter: { card: "summary_large_image", title, description },
     // manifest здесь не задаётся: ссылку с crossorigin рендерит сам layout, см. ниже
     // iOS: полноэкранный режим с домашнего экрана и своё имя под иконкой
     appleWebApp: { capable: true, title: "Tishim", statusBarStyle: "default" },

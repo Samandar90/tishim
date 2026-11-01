@@ -12,7 +12,7 @@ import {
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { EXTRA_NODES, type ToothNode, type ToothPaint } from "./model3d";
+import { EXTRA_NODES, MODEL_VERSION, type ToothNode, type ToothPaint } from "./model3d";
 
 // Модели кэшируются на всю жизнь страницы: шторку зуба и карту открывают снова и
 // снова, и качать и разбирать те же GLB повторно незачем.
@@ -21,7 +21,7 @@ const models = new Map<string, Promise<Group>>();
 export function loadModel(url: string): Promise<Group> {
   let model = models.get(url);
   if (!model) {
-    model = new GLTFLoader().loadAsync(url).then((gltf) => gltf.scene);
+    model = new GLTFLoader().loadAsync(`${url}?v=${MODEL_VERSION}`).then((gltf) => gltf.scene);
     // неудачная загрузка не кэшируется — следующее открытие попробует снова
     model.catch(() => models.delete(url));
     models.set(url, model);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { PERMANENT_LOWER, PERMANENT_UPPER } from "@/lib/constants/teeth";
+import { ToothIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { JawViewToggle, useJawView } from "@/components/odontogram/JawViewToggle";
 import { Legend } from "@/components/odontogram/Legend";
@@ -55,7 +56,12 @@ export function DemoJaw() {
         ref={stageRef}
         className="relative h-80 overflow-hidden rounded-2xl border border-white/10 bg-white/5 lg:h-stage-hero"
       >
-        {!ready && <div aria-busy className="absolute inset-0 animate-pulse bg-white/5" />}
+        {/* без JS и до загрузки three здесь знак, а не пустая коробка */}
+        {!ready && (
+          <div aria-busy className="absolute inset-0 flex items-center justify-center">
+            <ToothIcon className="size-24 text-white/20 motion-safe:animate-pulse" />
+          </div>
+        )}
         {near && (
           <Jaw3D
             chart={DEMO_CHART}

@@ -21,6 +21,13 @@ export interface ToothModel {
   flipY: boolean;
 }
 
+/**
+ * Версия файлов моделей для кэша: next.config отдаёт /models/* с immutable на год,
+ * поэтому изменённый GLB браузер увидит только с новым номером — поднимать после
+ * каждой пересборки генератором scripts/teeth3d.
+ */
+export const MODEL_VERSION = 1;
+
 /** detail — крупная модель для шторки зуба, jaw — облегчённая: челюсть показывает все зубы сразу. */
 export function toothModel(fdi: number, lod: "detail" | "jaw" = "detail"): ToothModel {
   // верхние типы лежат в файлах 1x и 5x, нижние — в 4x и 8x

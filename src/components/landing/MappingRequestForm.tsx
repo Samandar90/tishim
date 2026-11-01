@@ -1,11 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { CLINIC_REQUEST_TAG } from "@/lib/constants/requests";
-import { formatUzPhone } from "@/lib/utils";
+import { formatUzPhone, todayLocal } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Textarea } from "@/components/ui/Input";
 
@@ -46,6 +46,8 @@ export function MappingRequestForm({
     if (!validate()) return;
 
     setLoading(true);
+    // Клиент Supabase нужен лендингу только здесь — качается при отправке, а не со страницей
+    const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     const finalComment = [isClinic ? CLINIC_REQUEST_TAG : null, comment.trim() || null]
       .filter(Boolean)
@@ -102,6 +104,7 @@ export function MappingRequestForm({
       <Field label={t("formName")} htmlFor="mr-name" error={errors.name}>
         <Input
           id="mr-name"
+          autoComplete="name"
           value={name}
           error={errors.name}
           maxLength={120}
@@ -117,6 +120,7 @@ export function MappingRequestForm({
           id="mr-phone"
           type="tel"
           inputMode="tel"
+          autoComplete="tel"
           value={phone}
           error={errors.phone}
           placeholder="+998 90 123 45 67"
@@ -135,7 +139,7 @@ export function MappingRequestForm({
           id="mr-date"
           type="date"
           value={date}
-          min={new Date().toISOString().slice(0, 10)}
+          min={todayLocal()}
           onChange={(e) => setDate(e.target.value)}
         />
       </Field>
@@ -169,6 +173,13 @@ export function MappingRequestForm({
       <Button type="submit" size="lg" block loading={loading}>
         {t("formSubmit")}
       </Button>
+
+      <p className="text-center text-small text-muted">
+        {t("consentPrefix")}{" "}
+        <Link href="/privacy" className="font-medium text-primary-700 underline-offset-2 hover:underline">
+          {t("privacyLink")}
+        </Link>
+      </p>
     </form>
   );
 }

@@ -9,9 +9,12 @@ export const runtime = "edge";
 /**
  * Иконки PWA генерируются на сборке из того же контура, что и логотип —
  * растровых файлов в репозитории нет, менять знак нужно в одном месте.
- * Маршруты: /icon/192, /icon/512, /icon/maskable-512 (их читает manifest.webmanifest/route.ts).
+ * Маршруты: /icon/32 и /icon/48 — favicon вкладки (раньше лежала иконка create-next-app),
+ * /icon/192, /icon/512, /icon/maskable-512 — их читает manifest.webmanifest/route.ts.
  */
 const VARIANTS = [
+  { id: "32", size: 32, maskable: false },
+  { id: "48", size: 48, maskable: false },
   { id: "192", size: 192, maskable: false },
   { id: "512", size: 512, maskable: false },
   { id: "maskable-512", size: 512, maskable: true },

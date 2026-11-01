@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CalendarCheck, ClipboardList, Phone, ShieldCheck, Smartphone, Stethoscope } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -26,7 +27,7 @@ export default async function LandingPage() {
   const locale = await getLocale();
   const supabase = await createClient();
 
-  const [settings, { data: doctor }, { data: stats }] = await Promise.all([
+  const [settings, { data: doctor }, { data: stats }, { data: clinic }] = await Promise.all([
     getAppSettings(),
     supabase
       .from("dentists")
@@ -38,7 +39,15 @@ export default async function LandingPage() {
       .maybeSingle(),
     // агрегат через RPC: обычный select по visits аноним не видит из-за RLS
     supabase.rpc("get_public_stats"),
+    // клиника в подвале не зависит от флагмана: без него на странице не было ни города, ни адреса
+    supabase
+      .from("clinics")
+      .select("name, address")
+      .order("created_at")
+      .limit(1)
+      .maybeSingle(),
   ]);
+  const place = [t("city"), clinic?.name, clinic?.address].filter(Boolean).join(", ");
   const featured = doctor as unknown as FeaturedDentist | null;
   const mappedCount = (stats as { mapped_patients?: number } | null)?.mapped_patients ?? 0;
 
@@ -271,17 +280,26 @@ export default async function LandingPage() {
             </div>
           </Reveal>
 
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <Logo subtitle={`© ${new Date().getFullYear()}`} />
-            {settings.contactPhone && (
-              <a
-                href={`tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`}
-                className="flex min-h-touch items-center gap-2 text-body font-medium text-primary-700 hover:text-primary-800"
-              >
-                <CalendarCheck className="size-4" />
-                {settings.contactPhone}
-              </a>
-            )}
+            <div className="space-y-1 text-body text-muted sm:text-right">
+              <p className="font-medium text-ink">{t("footerContacts")}</p>
+              <p>{place}</p>
+              {settings.contactPhone && (
+                <a
+                  href={`tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`}
+                  className="inline-flex min-h-touch items-center gap-2 font-medium text-primary-700 hover:text-primary-800"
+                >
+                  <CalendarCheck className="size-4" />
+                  {settings.contactPhone}
+                </a>
+              )}
+              <p>
+                <Link href="/privacy" className="underline-offset-2 hover:text-ink hover:underline">
+                  {t("privacyLink")}
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </footer>

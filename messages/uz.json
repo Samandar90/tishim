@@ -19,8 +19,8 @@
     "goHome": "Bosh sahifaga"
   },
   "meta": {
-    "title": "Tishim — stomatologik karta",
-    "description": "Bemorning yagona stomatologik kartasi"
+    "title": "Tishim — Toshkentda bemorning raqamli tish kartasi",
+    "description": "Stomatologda bir ko'rik — va barcha tishlar holati, tashxislar va davolash tarixi doim telefoningizda. O'z kartangizga kirish abadiy bepul. Onlayn yozilish."
   },
   "landing": {
     "title": "Tishlaringizning raqamli kartasi — abadiy",
@@ -73,7 +73,10 @@
     "footerClinicTitle": "Siz stomatologmisiz?",
     "footerClinicText": "Klinikangizni ulamoqchimisiz? Ariza qoldiring — shartlarni aytib beramiz.",
     "footerClinicCta": "Ariza qoldirish",
-    "footerContacts": "Kontaktlar"
+    "footerContacts": "Kontaktlar",
+    "city": "Toshkent",
+    "consentPrefix": "«Ariza yuborish» tugmasini bosib, siz quyidagiga rozilik bildirasiz:",
+    "privacyLink": "maxfiylik siyosati"
   },
   "auth": {
     "loginTitle": "Kirish",
@@ -123,7 +126,9 @@
     "resetDoneText": "Endi yangi parol bilan kiring. Hozir kabinetingizni ochamiz.",
     "resetDoneButton": "Kabinetni ochish",
     "resetExpiredTitle": "Havola ishlamadi",
-    "requestAgain": "Yangi havola so'rash"
+    "requestAgain": "Yangi havola so'rash",
+    "consentPrefix": "Hisob yaratib, siz quyidagiga rozilik bildirasiz:",
+    "privacyLink": "maxfiylik siyosati"
   },
   "nav": {
     "dashboard": "Karta",
@@ -469,5 +474,10 @@
       "done": "Bajarildi",
       "cancelled": "Bekor qilindi"
     }
+  },
+  "privacy": {
+    "title": "Maxfiylik siyosati",
+    "updated": "2026-yil 2-noyabrdagi tahrir",
+    "back": "Bosh sahifaga"
   }
 }

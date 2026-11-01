@@ -185,6 +185,13 @@ export default function RegisterPage() {
           <Button type="submit" size="lg" block loading={loading}>
             {t("registerButton")}
           </Button>
+
+          <p className="text-center text-small text-muted">
+            {t("consentPrefix")}{" "}
+            <Link href="/privacy" className="font-medium text-primary-700 underline-offset-2 hover:underline">
+              {t("privacyLink")}
+            </Link>
+          </p>
         </form>
 
         <p className="mt-6 text-center text-body text-muted">

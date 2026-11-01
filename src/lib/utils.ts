@@ -41,6 +41,17 @@ function parseDate(value: string): Date {
 }
 
 /** Прогрессивная маска узбекского номера: +998 XX XXX XX XX */
+/**
+ * Сегодня как YYYY-MM-DD по местному календарю. toISOString() даёт UTC-дату:
+ * в Ташкенте до пяти утра это ещё «вчера», и форма не давала выбрать сегодняшний день.
+ */
+export function todayLocal(now: Date = new Date()): string {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export function formatUzPhone(raw: string): string {
   let digits = raw.replace(/\D/g, "");
   if (digits.startsWith("998")) digits = digits.slice(3);

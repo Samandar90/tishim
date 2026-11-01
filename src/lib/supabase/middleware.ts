@@ -1,13 +1,16 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-/** Открыты анониму; вошедшего отсюда уводим в его кабинет. */
-const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
 /**
- * Открыты всем, и вошедшего не уводим: новый пароль ставят с recovery-сессией из письма,
- * а без сессии страница сама объяснит, что ссылка не сработала.
+ * Кабинеты по ролям. Только отсюда аноним уходит на /login; всё остальное —
+ * лендинг, вход, /privacy, robots.txt, sitemap, опечатки в адресе — проходит
+ * дальше, и неизвестный путь получает настоящую 404 (not-found.tsx), а не
+ * форму входа. Защита данных — RLS, а не этот список (см. CLAUDE.md).
  */
-const OPEN_PATHS = ["/reset-password"];
+const PROTECTED_PREFIXES = ["/dashboard", "/visits", "/access", "/ai-check", "/dentist", "/admin"];
+
+/** Экраны входа: вошедшего отсюда уводим в его кабинет. */
+const AUTH_PATHS = ["/login", "/register", "/forgot-password"];
 
 /** Dev-песочница: открыта всем и не участвует в редиректах по роли. */
 function isDevSandbox(pathname: string) {
@@ -17,9 +20,6 @@ function isDevSandbox(pathname: string) {
 function matches(pathname: string, paths: string[]) {
   return paths.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
-
-const isPublic = (pathname: string) => matches(pathname, PUBLIC_PATHS);
-const isOpen = (pathname: string) => matches(pathname, OPEN_PATHS);
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
@@ -54,16 +54,16 @@ export async function updateSession(request: NextRequest) {
 
   if (isDevSandbox(pathname)) return response;
 
-  if (!user && !isPublic(pathname) && !isOpen(pathname) && pathname !== "/") {
+  if (!user && matches(pathname, PROTECTED_PREFIXES)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
 
-  if (user && (isPublic(pathname) || pathname === "/")) {
-    // Role-based home. Actual data access is enforced by RLS; the exact
-    // role check for each area happens in the area's server layout.
+  if (user && (matches(pathname, AUTH_PATHS) || pathname === "/")) {
+    // Домашняя страница по роли. Доступ к данным держит RLS; точную роль для
+    // каждой зоны проверяет её серверный layout.
     const role = (user.user_metadata?.role as string) ?? "patient";
     const url = request.nextUrl.clone();
     url.search = "";
