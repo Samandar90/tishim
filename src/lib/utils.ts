@@ -69,6 +69,15 @@ export function formatUzPhone(raw: string): string {
  * через Array.from, а не charAt — суррогатные пары не режутся пополам.
  * Без Intl: одинаково на сервере и в браузере, гидратация не расходится.
  */
+/**
+ * Имя для обращения. Форма регистрации просит Ф.И.О. в этом порядке, поэтому первое
+ * слово — фамилия: «Здравствуйте, Азимова!» звучало казённо. Одно слово — как есть.
+ */
+export function firstName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  return parts.length >= 2 ? parts[1] : (parts[0] ?? "");
+}
+
 export function initials(fullName: string): string {
   return fullName
     .trim()

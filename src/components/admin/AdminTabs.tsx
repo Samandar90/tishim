@@ -141,7 +141,7 @@ export function AdminTabs({
             onClick={() => setTab(value)}
             className={cn(
               "min-h-touch flex-1 rounded-[10px] px-3 text-sm font-medium transition-colors sm:min-h-0 sm:py-2",
-              tab === value ? "bg-primary-600 text-white" : "text-slate-500 hover:text-slate-800"
+              tab === value ? "bg-primary-700 text-white" : "text-slate-500 hover:text-slate-800"
             )}
           >
             {t(`tabs.${value}`)}

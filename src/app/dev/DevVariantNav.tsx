@@ -19,7 +19,7 @@ export function DevVariantNav({
           href={`${base}?v=${key}`}
           className={cn(
             "rounded-lg border border-line px-2.5 py-1",
-            key === current ? "bg-primary-600 text-white" : "bg-card text-muted hover:text-ink"
+            key === current ? "bg-primary-700 text-white" : "bg-card text-muted hover:text-ink"
           )}
         >
           {label}

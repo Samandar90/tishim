@@ -34,8 +34,8 @@
     "heroBadge": "Tibbiy ma'lumotlar sizning nazoratingizda",
     "howTitle": "Bu qanday ishlaydi",
     "howSubtitle": "Arizadan abadiy siznikiga aylanadigan kartagacha uch qadam",
-    "factExperience": "yillik tajriba",
-    "factMapped": "karta raqamlashtirilgan",
+    "factExperience": "{count, plural, other {yillik tajriba}}",
+    "factMapped": "{count, plural, other {karta raqamlashtirilgan}}",
     "factRating": "reyting",
     "step1Title": "Yoziladigan vaqtni tanlaysiz",
     "step1Text": "Ariza qoldiring — sizga qo'ng'iroq qilib, qulay vaqtni kelishamiz.",
@@ -134,7 +134,7 @@
     "dashboard": "Karta",
     "visits": "Tashriflar",
     "access": "Ruxsat",
-    "aiCheck": "AI tekshiruv",
+    "aiCheck": "AI tekshiruvi",
     "patients": "Bemorlar",
     "accessByCode": "Kirish kodi",
     "admin": "Panel",
@@ -145,7 +145,9 @@
     "roleDentist": "Stomatolog",
     "roleAdmin": "Administrator",
     "profile": "Profil",
-    "language": "Til"
+    "language": "Til",
+    "sidebar": "Bo'limlar",
+    "bottomBar": "Pastki menyu"
   },
   "odontogram": {
     "permanent": "Doimiy",
@@ -214,7 +216,7 @@
     "teethMap": "Tishlar xaritasi",
     "nextVisit": "Yaqin tashrif",
     "noUpcoming": "Yaqin tashriflar yo'q",
-    "debt": "To'lov uchun",
+    "debt": "Qarz",
     "noDebt": "Qarz yo'q",
     "allVisits": "Barcha tashriflar",
     "emptyTitle": "Kartangiz hozircha bo'sh",
@@ -248,17 +250,17 @@
       "partial": "Qisman",
       "paid": "To'langan"
     },
-    "attachments": "Ilovalar",
+    "attachments": "Biriktirilgan fayllar",
     "attachmentKinds": {
       "xray": "Rentgen",
       "photo": "Foto",
       "document": "Hujjat"
     },
-    "noAttachments": "Ilovalar yo'q",
+    "noAttachments": "Biriktirilgan fayllar yo'q",
     "details": "Batafsil",
     "visitDate": "Tashrif sanasi",
     "nextVisitDate": "Keyingi tashrif",
-    "affectedTeeth": "Davolangan tishlar",
+    "affectedTeeth": "Bu tashrifdagi tishlar",
     "procedures": "Muolajalar",
     "toothN": "{n}-tish",
     "types": {
@@ -286,7 +288,7 @@
       "pending": "Kutilmoqda",
       "revoked": "Bekor qilingan"
     },
-    "grantedAt": "{date} dan",
+    "grantedAt": "{date}-dan",
     "codeError": "Kod yaratib bo'lmadi. Qayta urinib ko'ring.",
     "revokeConfirmTitle": "Ruxsat bekor qilinsinmi?",
     "revokeConfirmText": "{name} endi kartangizni ocha olmaydi. Ruxsatni qaytarish uchun yangi kod berish kerak bo'ladi.",
@@ -295,7 +297,7 @@
     "granted": "Ruxsat berildi: {name}"
   },
   "aiCheck": {
-    "title": "AI tekshiruv",
+    "title": "AI tekshiruvi",
     "subtitle": "Tishlaringizning 1–3 ta aniq suratini yuklang — dastlabki baho oling.",
     "upload": "Surat qo'shish",
     "uploadHint": "3 tagacha surat, JPG/PNG, 10 MB gacha",
@@ -474,7 +476,7 @@
     "featuredConfirmTitle": "Flagman shifokor etib tayinlansinmi?",
     "featuredConfirmText": "{name} lendingda ko'rinadi va raqamlashtirish arizalarini oladi. Joriy flagman bu rolni yo'qotadi.",
     "unfeaturedConfirmTitle": "Flagmanlik olinsinmi?",
-    "unfeaturedConfirmText": "Shifokor bloki lendingdan yo'qoladi va raqamlashtirish arizalari {name} ga kelmay qo'yadi.",
+    "unfeaturedConfirmText": "Shifokor bloki bosh sahifadan yo'qoladi va raqamlashtirish arizalari {name}ga kelmay qo'yadi.",
     "phoneInvalid": "To'liq raqamni kiriting: +998 va 9 ta raqam, yoki maydonni bo'sh qoldiring.",
     "mappingPriceHint": "Bosh sahifada ko'rsatiladi va «birlamchi raqamlashtirish» qabuliga qo'yiladi.",
     "contactPhoneHint": "Bosh sahifada va kartasi bo'sh bemorlarga ko'rsatiladi. Bo'sh bo'lsa — havola bo'lmaydi.",

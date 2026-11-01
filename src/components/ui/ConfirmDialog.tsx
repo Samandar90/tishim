@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "./Button";
 import { useNativeDialog } from "./useNativeDialog";
@@ -29,6 +30,8 @@ export function ConfirmDialog({
 }) {
   const t = useTranslations("common");
   const { ref } = useNativeDialog(open);
+  const titleId = useId();
+  const descId = useId();
 
   return (
     <dialog
@@ -39,10 +42,18 @@ export function ConfirmDialog({
       }}
       // !m-auto: селектор родительского space-y-* дотягивается до диалога в top layer
       // и ставит margin-top, отчего центрированный диалог уезжал к верхнему краю
+      aria-labelledby={titleId}
+      aria-describedby={description ? descId : undefined}
       className="w-[calc(100vw-2rem)] max-w-md !m-auto rounded-2xl border border-line bg-card p-6 shadow-modal backdrop:bg-slate-900/50"
     >
-      <h2 className="text-h3 text-ink">{title}</h2>
-      {description && <p className="mt-2 text-body text-muted">{description}</p>}
+      <h2 id={titleId} className="text-h3 text-ink">
+        {title}
+      </h2>
+      {description && (
+        <p id={descId} className="mt-2 text-body text-muted">
+          {description}
+        </p>
+      )}
       <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button variant="secondary" onClick={onCancel} disabled={loading}>
           {t("cancel")}

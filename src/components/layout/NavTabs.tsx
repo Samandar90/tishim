@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   BarChart3,
   CalendarDays,
@@ -68,9 +69,10 @@ function useIsActive() {
 /** Боковая навигация — десктоп (≥ md). */
 export function Sidebar({ items }: { items: NavItem[] }) {
   const isActive = useIsActive();
+  const t = useTranslations("nav");
 
   return (
-    <nav className="hidden md:block" aria-label="main">
+    <nav className="hidden md:block" aria-label={t("sidebar")}>
       <ul className="space-y-1">
         {items.map((item) => {
           const Icon = ICONS[item.icon];
@@ -102,11 +104,12 @@ export function Sidebar({ items }: { items: NavItem[] }) {
 /** Нижняя таб-панель — мобильный (< md). */
 export function BottomTabs({ items }: { items: NavItem[] }) {
   const isActive = useIsActive();
+  const t = useTranslations("nav");
 
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur safe-bottom md:hidden"
-      aria-label="main"
+      aria-label={t("bottomBar")}
     >
       <div className="mx-auto flex max-w-lg items-stretch">
         {items.map((item) => {

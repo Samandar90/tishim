@@ -1,5 +1,7 @@
 import {
+  cloneElement,
   forwardRef,
+  isValidElement,
   useId,
   type InputHTMLAttributes,
   type TextareaHTMLAttributes,
@@ -8,11 +10,13 @@ import {
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Рамка slate-300, а не line: граница #e2e8f0 на белом — 1,2:1, поле сливалось с
+// карточкой. Кольцо фокуса без прозрачности: 20% давали 1,21:1, фокус был невидим.
 const base =
-  "w-full rounded-xl border bg-card px-3.5 text-body text-ink transition-colors placeholder:text-slate-400 " +
-  "focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-slate-50 disabled:text-muted";
-const normal = "border-line focus:border-primary-500";
-const invalid = "border-danger focus:border-danger focus:ring-danger/20";
+  "w-full rounded-xl border bg-card px-3.5 text-body text-ink transition-colors placeholder:text-slate-500 " +
+  "focus:outline-none focus:ring-2 focus:ring-primary-700 disabled:bg-slate-50 disabled:text-muted";
+const normal = "border-slate-300 hover:border-slate-400 focus:border-primary-700";
+const invalid = "border-danger focus:border-danger focus:ring-danger";
 
 type FieldProps = { error?: string | null };
 
@@ -99,14 +103,24 @@ export function Field({
 }) {
   const fallbackId = useId();
   const id = htmlFor ?? fallbackId;
+  // Ошибку и подсказку скринридер читает вместе с полем — через aria-describedby
+  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
+  const control =
+    describedBy && isValidElement<{ "aria-describedby"?: string }>(children)
+      ? cloneElement(children, { "aria-describedby": describedBy })
+      : children;
   return (
     <div className={className}>
       <Label htmlFor={id}>{label}</Label>
-      {children}
+      {control}
       {error ? (
-        <p className="mt-1.5 text-small text-danger">{error}</p>
+        <p id={`${id}-error`} aria-live="polite" className="mt-1.5 text-small text-danger">
+          {error}
+        </p>
       ) : hint ? (
-        <p className="mt-1.5 text-small text-muted">{hint}</p>
+        <p id={`${id}-hint`} className="mt-1.5 text-small text-muted">
+          {hint}
+        </p>
       ) : null}
     </div>
   );

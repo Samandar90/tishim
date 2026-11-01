@@ -20,7 +20,7 @@ export function Logo({
       className={cn("flex min-h-touch items-center gap-2.5", className)}
       aria-label="Tishim"
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-white">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary-700 text-white">
         <ToothIcon className="size-5" />
       </span>
       <span className="flex flex-col leading-none">

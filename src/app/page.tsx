@@ -81,6 +81,7 @@ export default async function LandingPage() {
         </div>
       </header>
 
+      <main>
       {/* ---------- 1. hero ---------- */}
       {/* верхний отступ = высота шапки + «чёлка» в standalone-режиме */}
       <section className="relative overflow-hidden bg-slate-900 pb-12 pt-[calc(6rem+env(safe-area-inset-top))] md:pb-20 md:pt-[calc(8rem+env(safe-area-inset-top))]">
@@ -200,9 +201,9 @@ export default async function LandingPage() {
                     <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-5">
                       {[
                         featured.experience_years
-                          ? { value: `${featured.experience_years}`, label: t("factExperience") }
+                          ? { value: `${featured.experience_years}`, label: t("factExperience", { count: featured.experience_years }) }
                           : null,
-                        mappedCount > 0 ? { value: `${mappedCount}`, label: t("factMapped") } : null,
+                        mappedCount > 0 ? { value: `${mappedCount}`, label: t("factMapped", { count: mappedCount }) } : null,
                         featured.rating ? { value: `${featured.rating}`, label: t("factRating") } : null,
                       ]
                         .filter(Boolean)
@@ -263,6 +264,8 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+
+      </main>
 
       {/* ---------- 6. футер ---------- */}
       <footer className="border-t border-line bg-card">

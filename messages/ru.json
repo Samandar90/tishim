@@ -34,8 +34,8 @@
     "heroBadge": "Медицинские данные под вашим контролем",
     "howTitle": "Как это работает",
     "howSubtitle": "Три шага от заявки до карты, которая останется с вами навсегда",
-    "factExperience": "лет стажа",
-    "factMapped": "карт оцифровано",
+    "factExperience": "{count, plural, one {год стажа} few {года стажа} many {лет стажа} other {года стажа}}",
+    "factMapped": "{count, plural, one {карта оцифрована} few {карты оцифровано} many {карт оцифровано} other {карты оцифровано}}",
     "factRating": "рейтинг",
     "step1Title": "Записываетесь",
     "step1Text": "Оставьте заявку — мы перезвоним и подберём удобное время.",
@@ -145,7 +145,9 @@
     "roleDentist": "Стоматолог",
     "roleAdmin": "Администратор",
     "profile": "Профиль",
-    "language": "Язык"
+    "language": "Язык",
+    "sidebar": "Разделы",
+    "bottomBar": "Нижнее меню"
   },
   "odontogram": {
     "permanent": "Постоянные",
@@ -258,7 +260,7 @@
     "details": "Подробнее",
     "visitDate": "Дата визита",
     "nextVisitDate": "Следующий визит",
-    "affectedTeeth": "Затронутые зубы",
+    "affectedTeeth": "Зубы в этом визите",
     "procedures": "Процедуры",
     "toothN": "Зуб {n}",
     "types": {
@@ -415,7 +417,7 @@
     "saveError": "Не удалось сохранить приём. Проверьте соединение и попробуйте ещё раз.",
     "needRecords": "Добавьте хотя бы одну запись",
     "saved": "Приём сохранён",
-    "attachmentsFailed": "Приём сохранён, но {count} файл(ов) загрузить не удалось",
+    "attachmentsFailed": "Приём сохранён, но {count, plural, one {# файл} few {# файла} many {# файлов} other {# файла}} загрузить не удалось",
     "leaveConfirmTitle": "Выйти без сохранения?",
     "leaveConfirmText": "Записи этого приёма ({count}) будут потеряны.",
     "leaveConfirm": "Выйти",

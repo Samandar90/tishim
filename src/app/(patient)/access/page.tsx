@@ -48,6 +48,7 @@ export default async function AccessPage() {
 
   return (
     <div className="space-y-4">
+      <h1 className="sr-only">{t("title")}</h1>
       <AccessCodeCard />
 
       <Card>

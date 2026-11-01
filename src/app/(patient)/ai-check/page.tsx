@@ -153,6 +153,7 @@ export default function AiCheckPage() {
 
   return (
     <div className="space-y-4">
+      <h1 className="sr-only">{t("title")}</h1>
       <Card>
         <div className="mb-4 flex items-center gap-3">
           <span className="flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600">

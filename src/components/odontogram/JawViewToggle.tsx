@@ -9,7 +9,7 @@ import type { JawView } from "./archLayout";
 export const segmentClass = (active: boolean) =>
   cn(
     "min-h-touch rounded-lg px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
-    active ? "bg-primary-600 text-white" : "text-slate-300 hover:text-white"
+    active ? "bg-primary-700 text-white" : "text-slate-300 hover:text-white"
   );
 
 /**

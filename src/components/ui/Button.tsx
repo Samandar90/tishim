@@ -20,10 +20,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, Bu
 
 /** Три стиля: заливка, обводка, прозрачная. Теней на кнопках нет по дизайн-системе. */
 const variants: Record<Variant, string> = {
-  primary: "bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800",
+  // primary-700, а не 600: белый текст на #0891b2 даёт 3,68:1 — ниже AA для 15px
+  primary: "bg-primary-700 text-white hover:bg-primary-800 active:bg-primary-900",
   secondary: "border border-line bg-card text-ink hover:bg-slate-50 active:bg-slate-100",
   ghost: "text-muted hover:bg-slate-100 hover:text-ink",
-  danger: "bg-danger text-white hover:bg-red-600 active:bg-red-700",
+  danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
 };
 
 const sizes: Record<Size, string> = {
@@ -39,7 +40,7 @@ export function buttonClasses({
 }: ButtonStyleProps): string {
   return cn(
     "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors duration-150",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2",
     "disabled:pointer-events-none disabled:opacity-50",
     variants[variant],
     sizes[size],

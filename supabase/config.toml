@@ -257,6 +257,11 @@ otp_expiry = 3600
 subject = "Tishim: новый пароль / yangi parol"
 content_path = "./supabase/templates/recovery.html"
 
+# Подтверждение регистрации тем же обработчиком: type=signup, дальше middleware по роли.
+[auth.email.template.confirmation]
+subject = "Tishim: подтвердите почту / pochtani tasdiqlang"
+content_path = "./supabase/templates/confirmation.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true

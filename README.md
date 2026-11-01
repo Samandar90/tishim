@@ -82,7 +82,8 @@ npm run dev
 на `/api/auth/confirm?next=/reset-password`. Обработчик кладёт сессию в cookie и ведёт на
 `/reset-password`, где пароль меняется через `updateUser`; остальные сессии пользователя
 закрываются (`signOut({ scope: "others" })`). Локально письма ловит почтовый ящик Supabase
-(`npx supabase status`), шаблон — `supabase/templates/recovery.html`.
+(`npx supabase status`), шаблоны — `supabase/templates/recovery.html` и `confirmation.html` (подтверждение
+регистрации тем же обработчиком, `type=signup`).
 
 В облачном проекте это настраивается руками один раз, иначе ссылки из писем не сработают:
 

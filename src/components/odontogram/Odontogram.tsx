@@ -155,7 +155,7 @@ export function Odontogram({
                 className={cn(
                   "min-h-touch rounded-lg px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
                   dentition === d
-                    ? "bg-primary-600 text-white"
+                    ? "bg-primary-700 text-white"
                     : onDark
                       ? "text-slate-300 hover:text-white"
                       : "text-muted hover:text-ink"

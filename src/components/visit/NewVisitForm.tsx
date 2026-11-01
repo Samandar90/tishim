@@ -659,7 +659,7 @@ export function NewVisitForm({
               aria-current={step === i ? "step" : undefined}
               className={cn(
                 "min-h-touch flex-1 rounded-lg px-2 text-small font-medium transition-colors md:flex-none md:px-5",
-                step === i ? "bg-primary-600 text-white" : "text-muted hover:text-ink"
+                step === i ? "bg-primary-700 text-white" : "text-muted hover:text-ink"
               )}
             >
               {t(`steps.${s}`)}
@@ -1009,7 +1009,7 @@ export function NewVisitForm({
                     onClick={() => setDiscountMode(m)}
                     className={cn(
                       "min-h-touch rounded-lg px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
-                      discountMode === m ? "bg-primary-600 text-white" : "text-muted hover:text-ink"
+                      discountMode === m ? "bg-primary-700 text-white" : "text-muted hover:text-ink"
                     )}
                   >
                     {m === "percent" ? "%" : t("subtotal")}

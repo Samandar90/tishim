@@ -47,6 +47,7 @@ export function HistorySlider({
           onDark ? "accent-primary-400" : "accent-primary-600"
         )}
         aria-label={t("history")}
+        aria-valuetext={value === null ? t("now") : formatDate(value, locale)}
       />
       <span
         className={cn(

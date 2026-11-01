@@ -51,7 +51,7 @@ export function LocaleSwitcher({ onDark, block }: { onDark?: boolean; block?: bo
             "rounded-lg px-3 font-medium transition-colors",
             block ? "min-h-touch flex-1 text-body" : "min-h-touch text-small sm:min-h-0 sm:py-1.5",
             current === l.value
-              ? "bg-primary-600 text-white"
+              ? "bg-primary-700 text-white"
               : onDark
                 ? "text-slate-300 hover:text-white"
                 : "text-muted hover:text-ink"

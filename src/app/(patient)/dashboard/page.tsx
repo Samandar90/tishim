@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { mustCount } from "@/lib/supabase/result";
 import { getSessionProfile } from "@/lib/auth";
 import { getAppSettings } from "@/lib/settings";
-import { formatDate, formatMoney } from "@/lib/utils";
+import { firstName, formatDate, formatMoney } from "@/lib/utils";
 import { TeethScene } from "@/components/odontogram/TeethScene";
 import { MappingRequestForm } from "@/components/landing/MappingRequestForm";
 import { Card, CardTitle } from "@/components/ui/Card";
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-h2 text-ink md:text-h1">
-          {t("greeting", { name: profile.full_name.split(" ")[0] || profile.full_name })}
+          {t("greeting", { name: firstName(profile.full_name) || profile.full_name })}
         </h1>
         <EmptyState
           icon={ClipboardList}
@@ -146,7 +146,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h2 text-ink md:text-h1">
-          {t("greeting", { name: profile.full_name.split(" ")[0] || profile.full_name })}
+          {t("greeting", { name: firstName(profile.full_name) || profile.full_name })}
         </h1>
         <Link
           href="/visits"
