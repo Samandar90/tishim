@@ -1071,7 +1071,7 @@ export function NewVisitForm({
           последнем, где врач заодно сверяет скидку и статус оплаты. На телефоне
           прижата к таб-бару во всю ширину, с md — плавающая карточка по ширине
           контента. Ошибка живёт тут же: она видна, где бы ни стояла прокрутка. */}
-      <div className="sticky bottom-16 z-30 -mx-4 border-t border-line bg-card/95 px-4 py-3 backdrop-blur md:bottom-4 md:mx-0 md:rounded-2xl md:border md:px-5 md:shadow-modal">
+      <div className="sticky bottom-tabbar z-30 -mx-4 border-t border-line bg-card/95 px-4 py-3 backdrop-blur md:bottom-4 md:mx-0 md:rounded-2xl md:border md:px-5 md:shadow-modal">
         {error && (
           <p role="alert" className="mb-2 rounded-xl bg-red-50 px-3.5 py-2 text-small text-danger">
             {error}

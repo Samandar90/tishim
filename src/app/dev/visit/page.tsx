@@ -145,7 +145,7 @@ export default async function VisitDevPage({
     <AppShell
       items={DEV_NAV}
       homeHref="/dev/visit"
-      profile={{ full_name: "Демо Пациент", phone: "+998 90 000 00 00" }}
+      profile={{ id: "00000000-0000-0000-0000-000000000000", birth_date: null, full_name: "Демо Пациент", phone: "+998 90 000 00 00" }}
       roleLabel="Пациент"
     >
       <div className="space-y-4">

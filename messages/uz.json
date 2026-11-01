@@ -128,7 +128,11 @@
     "resetExpiredTitle": "Havola ishlamadi",
     "requestAgain": "Yangi havola so'rash",
     "consentPrefix": "Hisob yaratib, siz quyidagiga rozilik bildirasiz:",
-    "privacyLink": "maxfiylik siyosati"
+    "privacyLink": "maxfiylik siyosati",
+    "nameRequired": "Familiya va ismni kiriting.",
+    "emailInvalid": "Pochta manzilini tekshiring.",
+    "phoneInvalid": "To'liq raqamni kiriting: +998 va 9 ta raqam, yoki maydonni bo'sh qoldiring.",
+    "networkError": "Server bilan aloqa yo'q. Internetni tekshirib, qayta urinib ko'ring."
   },
   "nav": {
     "dashboard": "Karta",
@@ -532,5 +536,20 @@
     "title": "Maxfiylik siyosati",
     "updated": "2026-yil 2-noyabrdagi tahrir",
     "back": "Bosh sahifaga"
+  },
+  "pwa": {
+    "installTitle": "Tishim'ni ilova sifatida o'rnating",
+    "installText": "Bosh ekrandan, manzil qatorisiz ochiladi.",
+    "installButton": "O'rnatish",
+    "later": "Keyinroq",
+    "iosTitle": "iPhone'ga qanday o'rnatiladi",
+    "iosStep1": "Safari pastki panelidagi «Ulashish» tugmasini bosing.",
+    "iosStep2": "«Bosh ekranga qo'shish»ni tanlang va tasdiqlang.",
+    "gotIt": "Tushunarli"
+  },
+  "profile": {
+    "edit": "O'zgartirish",
+    "birthDate": "Tug'ilgan sana",
+    "error": "Profilni saqlab bo'lmadi. Qayta urinib ko'ring."
   }
 }

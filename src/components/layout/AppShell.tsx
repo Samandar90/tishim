@@ -5,6 +5,7 @@ import { LogoutButton } from "./LogoutButton";
 import { Logo } from "./Logo";
 import { BottomTabs, Sidebar, type NavItem } from "./NavTabs";
 import { ProfileSheet } from "./ProfileSheet";
+import { InstallPrompt } from "./InstallPrompt";
 
 /**
  * Единый каркас кабинетов. Десктоп: боковое меню, в шапке имя, язык и выход.
@@ -20,7 +21,7 @@ export async function AppShell({
 }: {
   items: NavItem[];
   homeHref: string;
-  profile: Pick<Profile, "full_name" | "phone">;
+  profile: Pick<Profile, "id" | "full_name" | "phone" | "birth_date">;
   roleLabel?: string;
   children: React.ReactNode;
 }) {
@@ -46,7 +47,7 @@ export async function AppShell({
               <LocaleSwitcher />
               <LogoutButton label={t("logout")} />
             </div>
-            <ProfileSheet name={profile.full_name} phone={profile.phone} roleLabel={roleLabel} />
+            <ProfileSheet profile={profile} roleLabel={roleLabel} />
           </div>
         </div>
       </header>
@@ -59,7 +60,10 @@ export async function AppShell({
         </aside>
 
         {/* page-enter — появление страницы после навигации, правило в globals.css */}
-        <main className="page-enter min-w-0 flex-1">{children}</main>
+        <main className="page-enter min-w-0 flex-1">
+          <InstallPrompt />
+          {children}
+        </main>
       </div>
 
       <BottomTabs items={items} />

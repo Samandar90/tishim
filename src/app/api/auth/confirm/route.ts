@@ -2,6 +2,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/safeNext";
 
 /**
  * Сюда ведут ссылки из писем Supabase. Обработчик кладёт сессию в cookie и отправляет
@@ -23,12 +24,6 @@ const OTP_TYPES: readonly EmailOtpType[] = [
 
 /** Куда вести, если в ссылке нет next: по типу письма; остальное решит middleware по роли. */
 const DEFAULT_NEXT: Partial<Record<EmailOtpType, string>> = { recovery: "/reset-password" };
-
-/** Только путь внутри сайта: внешний адрес в next превратил бы письмо в открытый редирект. */
-function safeNext(raw: string | null, fallback: string): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) return fallback;
-  return raw;
-}
 
 function otpType(raw: string | null): EmailOtpType | null {
   return OTP_TYPES.includes(raw as EmailOtpType) ? (raw as EmailOtpType) : null;

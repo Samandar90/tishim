@@ -14,6 +14,9 @@ import { getLocale, getTranslations } from "next-intl/server";
  * кэшировать медицинские данные на устройстве нельзя, а для установки на
  * домашний экран современным Chrome и Safari он не нужен.
  */
+/** Поднимать при изменении знака: иконки кэшируются на год, без версии телефон не увидит новую. */
+const ICON_VERSION = 1;
+
 export async function GET() {
   const locale = await getLocale();
   const t = await getTranslations("meta");
@@ -31,9 +34,9 @@ export async function GET() {
     background_color: "#f8fafc",
     theme_color: "#0891b2",
     icons: [
-      { src: "/icon/192", sizes: "192x192", type: "image/png" },
-      { src: "/icon/512", sizes: "512x512", type: "image/png" },
-      { src: "/icon/maskable-512", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: `/icon/192?v=${ICON_VERSION}`, sizes: "192x192", type: "image/png" },
+      { src: `/icon/512?v=${ICON_VERSION}`, sizes: "512x512", type: "image/png" },
+      { src: `/icon/maskable-512?v=${ICON_VERSION}`, sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 

@@ -76,7 +76,7 @@ export default async function DentistDevPage({
     <AppShell
       items={DEV_NAV}
       homeHref="/dev/dentist"
-      profile={{ full_name: "Азиз Каримов", phone: "+998 90 000 00 00" }}
+      profile={{ id: "00000000-0000-0000-0000-000000000000", birth_date: null, full_name: "Азиз Каримов", phone: "+998 90 000 00 00" }}
       roleLabel="Врач"
     >
       <div className="space-y-4">

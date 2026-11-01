@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Stethoscope, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { isNetworkAuthError } from "@/lib/authErrors";
+import { MIN_PASSWORD_LENGTH } from "@/lib/password";
 import { formatUzPhone } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -19,24 +21,45 @@ type Role = "patient" | "dentist";
 export default function RegisterPage() {
   const t = useTranslations("auth");
   const router = useRouter();
-  const [role, setRole] = useState<Role>("patient");
+  // Плитка «Стоматолог» — только по ссылке /register?role=dentist, которую даёт владелец:
+  // врачом мог зарегистрироваться кто угодно, а пациент — ошибиться ролью без возврата.
+  const dentistAllowed = useSearchParams().get("role") === "dentist";
+  const [role, setRole] = useState<Role>(dentistAllowed ? "dentist" : "patient");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ form?: string; email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{
+    form?: string;
+    name?: string;
+    phone?: string;
+    email?: string;
+    password?: string;
+  }>({});
   const [needsConfirm, setNeedsConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErrors({});
+    // Раньше форма не проверяла ничего, и аккаунт создавался с пустым именем
+    const next: typeof errors = {};
+    const digits = phone.replace(/\D/g, "");
+    if (fullName.trim().length < 2) next.name = t("nameRequired");
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) next.email = t("emailInvalid");
+    if (password.length < MIN_PASSWORD_LENGTH) next.password = t("weakPassword");
+    if (digits.length > 3 && digits.length !== 12) next.phone = t("phoneInvalid");
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
     setLoading(true);
 
     const { data, error } = await createClient().auth.signUp({
-      email,
+      email: email.trim(),
       password,
-      options: { data: { role, full_name: fullName.trim(), phone: phone.trim() || null } },
+      options: {
+        data: { role, full_name: fullName.trim(), phone: digits.length > 3 ? phone.trim() : null },
+        // ссылка из письма подтверждения идёт на наш обработчик, дальше middleware по роли
+        emailRedirectTo: `${window.location.origin}/api/auth/confirm?next=/`,
+      },
     });
 
     if (error) {
@@ -48,7 +71,7 @@ export default function RegisterPage() {
       } else if (msg.includes("password")) {
         setErrors({ password: t("weakPassword") });
       } else {
-        setErrors({ form: t("registerError") });
+        setErrors({ form: isNetworkAuthError(error) ? t("networkError") : t("registerError") });
       }
       setLoading(false);
       return;
@@ -93,6 +116,7 @@ export default function RegisterPage() {
         <p className="mb-6 mt-1 text-body text-muted">{t("registerSubtitle")}</p>
 
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
+          {dentistAllowed && (
           <div>
             <Label>{t("iAm")}</Label>
             <div className="grid grid-cols-2 gap-2">
@@ -115,28 +139,39 @@ export default function RegisterPage() {
               ))}
             </div>
           </div>
+          )}
 
-          <Field label={t("fullName")} htmlFor="fullName">
+          <Field label={t("fullName")} htmlFor="fullName" error={errors.name}>
             <Input
               id="fullName"
               required
               minLength={2}
+              autoComplete="name"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              error={errors.name}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
+              }}
               placeholder={t("fullNamePlaceholder")}
             />
           </Field>
 
-          <Field label={t("phone")} htmlFor="phone">
+          <Field label={t("phone")} htmlFor="phone" error={errors.phone}>
             <Input
               id="phone"
               type="tel"
               inputMode="tel"
+              autoComplete="tel"
               value={phone}
+              error={errors.phone}
               onFocus={() => {
                 if (!phone) setPhone("+998 ");
               }}
-              onChange={(e) => setPhone(formatUzPhone(e.target.value))}
+              onChange={(e) => {
+                setPhone(formatUzPhone(e.target.value));
+                if (errors.phone) setErrors((p) => ({ ...p, phone: undefined }));
+              }}
               placeholder="+998 90 123 45 67"
             />
           </Field>

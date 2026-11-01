@@ -13,7 +13,7 @@ vi.mock("@/lib/supabase/client", () => ({
 function renderSheet() {
   return render(
     <NextIntlClientProvider locale="ru" messages={messages} timeZone="Asia/Tashkent">
-      <ProfileSheet name="Иванов Иван" phone="998901234567" roleLabel="Пациент" />
+      <ProfileSheet profile={{ id: "u1", full_name: "Иванов Иван", phone: "998901234567", birth_date: null }} roleLabel="Пациент" />
     </NextIntlClientProvider>
   );
 }
@@ -40,7 +40,7 @@ describe("ProfileSheet", () => {
   it("без телефона строки с номером нет", () => {
     render(
       <NextIntlClientProvider locale="ru" messages={messages} timeZone="Asia/Tashkent">
-        <ProfileSheet name="Иванов Иван" phone={null} roleLabel="Пациент" />
+        <ProfileSheet profile={{ id: "u1", full_name: "Иванов Иван", phone: null, birth_date: null }} roleLabel="Пациент" />
       </NextIntlClientProvider>
     );
     fireEvent.click(screen.getByRole("button", { name: messages.nav.profile }));

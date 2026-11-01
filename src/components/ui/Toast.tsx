@@ -41,7 +41,7 @@ export function Toast({
       role="status"
       aria-live="polite"
       className={cn(
-        "fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-sm animate-fade-in-up items-center gap-2.5",
+        "fixed inset-x-4 bottom-toast z-50 mx-auto flex max-w-sm animate-fade-in-up items-center gap-2.5",
         "rounded-xl px-4 py-3 text-body font-medium text-white shadow-modal md:bottom-6",
         tone === "success" ? "bg-emerald-600" : "bg-danger"
       )}

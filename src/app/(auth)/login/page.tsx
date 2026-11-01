@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { isNetworkAuthError } from "@/lib/authErrors";
+import { safeNext } from "@/lib/safeNext";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
 import { AuthScreen } from "@/components/auth/AuthScreen";
@@ -12,6 +14,8 @@ import { AuthScreen } from "@/components/auth/AuthScreen";
 export default function LoginPage() {
   const t = useTranslations("auth");
   const router = useRouter();
+  // middleware кладёт сюда страницу, с которой увёл на вход; чужой адрес не пропускаем
+  const next = safeNext(useSearchParams().get("next"), "/");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +29,12 @@ export default function LoginPage() {
     const { error } = await createClient().auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(t("invalidCredentials"));
+      setError(isNetworkAuthError(error) ? t("networkError") : t("invalidCredentials"));
       setLoading(false);
       return;
     }
 
-    router.push("/");
+    router.push(next);
     router.refresh();
   }
 

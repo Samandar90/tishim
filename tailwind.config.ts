@@ -72,6 +72,10 @@ const config: Config = {
         "stage-hero": "clamp(24rem, calc(100vh - 17.5rem), 32.5rem)",
       },
       spacing: {
+        // Низ таб-бара и тоста на телефоне: 4rem панели плюс полоска Home на iPhone —
+        // без env() панель итога в форме приёма уезжала под таб-бар в режиме приложения
+        tabbar: "calc(4rem + env(safe-area-inset-bottom))",
+        toast: "calc(6rem + env(safe-area-inset-bottom))",
         section: "80px", // вертикальный ритм секций лендинга (десктоп)
         "section-sm": "48px", // мобильный
       },

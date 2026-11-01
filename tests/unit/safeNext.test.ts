@@ -10,7 +10,7 @@ describe("safeNext", () => {
   it("внешние адреса и мусор заменяет запасным", () => {
     expect(safeNext("https://evil.example", "/")).toBe("/");
     expect(safeNext("//evil.example", "/")).toBe("/");
-    expect(safeNext("/a\b", "/")).toBe("/");
+    expect(safeNext("/a" + String.fromCharCode(92) + "b", "/")).toBe("/");
     expect(safeNext(null, "/login")).toBe("/login");
     expect(safeNext("", "/login")).toBe("/login");
   });

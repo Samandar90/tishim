@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Phone, X } from "lucide-react";
-import { formatUzPhone } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
+import { Cake, Phone, X } from "lucide-react";
+import type { Profile } from "@/lib/types/database";
+import { formatDate, formatUzPhone } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
+import { ProfileEditForm } from "./ProfileEditForm";
 import { Avatar } from "@/components/ui/Avatar";
 import { Sheet } from "@/components/ui/Sheet";
 import { LocaleSwitcher } from "./LocaleSwitcher";
@@ -15,17 +18,19 @@ import { LogoutButton } from "./LogoutButton";
  * там язык и выход живут прямо в шапке.
  */
 export function ProfileSheet({
-  name,
-  phone,
+  profile,
   roleLabel,
 }: {
-  name: string;
-  phone: string | null;
+  profile: Pick<Profile, "id" | "full_name" | "phone" | "birth_date">;
   roleLabel?: string;
 }) {
   const t = useTranslations("nav");
   const tc = useTranslations("common");
+  const tp = useTranslations("profile");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const { full_name: name, phone } = profile;
 
   return (
     <>
@@ -57,19 +62,40 @@ export function ProfileSheet({
           </button>
         </header>
 
-        <div className="mt-3 flex items-center gap-3">
-          <Avatar name={name} size="lg" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-body font-medium text-ink">{name}</p>
-            {roleLabel && <p className="text-small text-muted">{roleLabel}</p>}
-            {phone && (
-              <p className="flex items-center gap-1.5 text-small text-muted">
-                <Phone className="size-3.5" strokeWidth={1.75} />
-                {formatUzPhone(phone)}
-              </p>
-            )}
+        {editing ? (
+          <div className="mt-4">
+            <ProfileEditForm
+              userId={profile.id}
+              initialName={name}
+              initialPhone={phone}
+              initialBirthDate={profile.birth_date}
+              onDone={() => setEditing(false)}
+            />
           </div>
-        </div>
+        ) : (
+          <div className="mt-3 flex items-start gap-3">
+            <Avatar name={name} size="lg" />
+            <div className="min-w-0 flex-1">
+              <p className="break-words text-body font-medium text-ink">{name || "—"}</p>
+              {roleLabel && <p className="text-small text-muted">{roleLabel}</p>}
+              {phone && (
+                <p className="flex items-center gap-1.5 text-small text-muted">
+                  <Phone className="size-3.5" strokeWidth={1.75} />
+                  {formatUzPhone(phone)}
+                </p>
+              )}
+              {profile.birth_date && (
+                <p className="flex items-center gap-1.5 text-small text-muted">
+                  <Cake className="size-3.5" strokeWidth={1.75} />
+                  {formatDate(profile.birth_date, locale)}
+                </p>
+              )}
+            </div>
+            <Button type="button" variant="secondary" onClick={() => setEditing(true)}>
+              {tp("edit")}
+            </Button>
+          </div>
+        )}
 
         <section className="mt-5">
           <p className="mb-2 text-small font-medium text-muted">{t("language")}</p>
