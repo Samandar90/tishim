@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { formatUzPhone } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Input, Label } from "@/components/ui/Input";
+import { Field, Input } from "@/components/ui/Input";
 import { Card, CardTitle } from "@/components/ui/Card";
 
 export function SettingsForm({
@@ -17,15 +17,26 @@ export function SettingsForm({
   initialPhone: string | null;
 }) {
   const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [price, setPrice] = useState(initialPrice != null ? String(initialPrice) : "");
   const [phone, setPhone] = useState(initialPhone ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    // Пустой телефон — допустимо (с лендинга пропадёт ссылка), а вот половина номера — нет:
+    // раньше «+998 » из автоподстановки сохранялся как есть.
+    const digits = phone.replace(/\D/g, "");
+    const cleanPhone = digits.length <= 3 ? "" : phone.trim();
+    if (digits.length > 3 && digits.length !== 12) {
+      setPhoneError(t("phoneInvalid"));
+      return;
+    }
+    setPhoneError(null);
     setSaving(true);
     setSaved(false);
     setError(null);
@@ -38,7 +49,7 @@ export function SettingsForm({
         value: Math.max(0, Math.round(parseFloat(price) || 0)),
         updated_at: now,
       },
-      { key: "contact_phone", value: phone.trim(), updated_at: now },
+      { key: "contact_phone", value: cleanPhone, updated_at: now },
     ]);
 
     setSaving(false);
@@ -47,6 +58,7 @@ export function SettingsForm({
       setError(t("settingsError"));
       return;
     }
+    setPhone(cleanPhone);
     setSaved(true);
     router.refresh();
   }
@@ -55,29 +67,37 @@ export function SettingsForm({
     <Card>
       <CardTitle>{t("settingsTitle")}</CardTitle>
       <form onSubmit={save} className="space-y-3">
-        <div>
-          <Label htmlFor="mappingPrice">{t("mappingPrice")}</Label>
+        <Field label={t("mappingPrice")} htmlFor="mappingPrice" hint={t("mappingPriceHint")}>
           <Input
             id="mappingPrice"
             type="number"
             min={0}
-            step="1000"
+            step="any"
             inputMode="numeric"
             required
             value={price}
             onChange={(e) => setPrice(e.target.value)}
           />
-        </div>
-        <div>
-          <Label htmlFor="contactPhone">{t("contactPhone")}</Label>
+        </Field>
+        <Field
+          label={t("contactPhone")}
+          htmlFor="contactPhone"
+          hint={t("contactPhoneHint")}
+          error={phoneError}
+        >
           <Input
             id="contactPhone"
             type="tel"
+            inputMode="tel"
             value={phone}
-            onChange={(e) => setPhone(formatUzPhone(e.target.value))}
+            error={phoneError}
+            onChange={(e) => {
+              setPhone(formatUzPhone(e.target.value));
+              if (phoneError) setPhoneError(null);
+            }}
             placeholder="+998 71 200 11 22"
           />
-        </div>
+        </Field>
 
         {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         {saved && (
@@ -87,7 +107,7 @@ export function SettingsForm({
         )}
 
         <Button type="submit" loading={saving}>
-          {t("settingsTitle")}
+          {tc("save")}
         </Button>
       </form>
     </Card>

@@ -474,7 +474,28 @@
     "featuredConfirmTitle": "Flagman shifokor etib tayinlansinmi?",
     "featuredConfirmText": "{name} lendingda ko'rinadi va raqamlashtirish arizalarini oladi. Joriy flagman bu rolni yo'qotadi.",
     "unfeaturedConfirmTitle": "Flagmanlik olinsinmi?",
-    "unfeaturedConfirmText": "Shifokor bloki lendingdan yo'qoladi va raqamlashtirish arizalari {name} ga kelmay qo'yadi."
+    "unfeaturedConfirmText": "Shifokor bloki lendingdan yo'qoladi va raqamlashtirish arizalari {name} ga kelmay qo'yadi.",
+    "phoneInvalid": "To'liq raqamni kiriting: +998 va 9 ta raqam, yoki maydonni bo'sh qoldiring.",
+    "mappingPriceHint": "Bosh sahifada ko'rsatiladi va «birlamchi raqamlashtirish» qabuliga qo'yiladi.",
+    "contactPhoneHint": "Bosh sahifada va kartasi bo'sh bemorlarga ko'rsatiladi. Bo'sh bo'lsa — havola bo'lmaydi.",
+    "noDentistsHint": "Shifokor o'zi ro'yxatdan o'tadi: ro'yxatdan o'tish sahifasi, «Stomatolog» roli. Shundan keyin u shu yerda paydo bo'ladi va uni flagman qilib tayinlash mumkin.",
+    "copyRegisterLink": "Shifokor uchun havolani nusxalash",
+    "registerLinkCopied": "Havola nusxalandi",
+    "editClinic": "O'zgartirish",
+    "clinicDeleteError": "Klinikani o'chirib bo'lmadi. Qayta urinib ko'ring.",
+    "deleteClinicTitle": "Klinika o'chirilsinmi?",
+    "deleteClinicText": "{name} bosh sahifadan yo'qoladi, bu klinika shifokorlarida «Klinika» maydoni tozalanadi.",
+    "checklist": {
+      "title": "Ishga tushirishga tayyorlik",
+      "featured": "Flagman shifokor tayinlangan — u bosh sahifada ko'rsatiladi va arizalarni oladi",
+      "price": "Birlamchi raqamlashtirish narxi belgilangan",
+      "phone": "Aloqa telefoni belgilangan",
+      "clinic": "Manzili bilan klinika qo'shilgan",
+      "newRequests": "{count, plural, =0 {Yangi arizalar yo'q} other {# ta yangi ariza qo'ng'iroq kutmoqda}}",
+      "fix": "Sozlash",
+      "open": "Ochish",
+      "done": "Tayyor"
+    }
   },
   "requests": {
     "title": "Raqamlashtirish arizalari",
@@ -496,7 +517,14 @@
       "scheduled": "Yozilgan",
       "done": "Bajarildi",
       "cancelled": "Bekor qilindi"
-    }
+    },
+    "filters": {
+      "active": "Ishda",
+      "new": "Yangilar",
+      "closed": "Yopilgan",
+      "all": "Hammasi"
+    },
+    "filterEmpty": "Bu bo'limda arizalar yo'q."
   },
   "privacy": {
     "title": "Maxfiylik siyosati",

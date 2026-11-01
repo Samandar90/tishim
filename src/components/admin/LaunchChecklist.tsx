@@ -46,7 +46,7 @@ export async function LaunchChecklist({
             </span>
             <span className="min-w-0 flex-1 text-body text-ink">{row.text}</span>
             {!row.ok && (
-              <ButtonLink href={row.href} variant="secondary" size="sm">
+              <ButtonLink href={row.href} variant="secondary">
                 {t("fix")}
               </ButtonLink>
             )}
@@ -66,7 +66,7 @@ export async function LaunchChecklist({
             {t("newRequests", { count: newRequests })}
           </span>
           {newRequests > 0 && (
-            <ButtonLink href="/admin/requests" size="sm">
+            <ButtonLink href="/admin/requests">
               {t("open")}
             </ButtonLink>
           )}

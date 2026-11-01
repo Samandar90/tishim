@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -9,7 +9,8 @@ import { cn, formatMoney } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { Card, CardTitle } from "@/components/ui/Card";
-import { BuildingIcon, PlusIcon } from "@/components/icons";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { BuildingIcon, PlusIcon, XIcon } from "@/components/icons";
 
 export interface AdminStats {
   patients: number;
@@ -32,9 +33,12 @@ export function AdminTabs({
   clinics: Clinic[];
 }) {
   const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("stats");
+  // ?tab=clinics — из чек-листа готовности на главной
+  const params = useSearchParams();
+  const [tab, setTab] = useState<Tab>(params.get("tab") === "clinics" ? "clinics" : "stats");
 
   // clinic form
   const [clinicName, setClinicName] = useState("");
@@ -42,6 +46,55 @@ export function AdminTabs({
   const [clinicPhone, setClinicPhone] = useState("");
   const [savingClinic, setSavingClinic] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // правка клиники: имя и адрес показываются на лендинге, а исправить их раньше было нельзя
+  const [editing, setEditing] = useState<Clinic | null>(null);
+  const [draft, setDraft] = useState({ name: "", address: "", phone: "" });
+  const [deleting, setDeleting] = useState<Clinic | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  function startEdit(c: Clinic) {
+    setEditing(c);
+    setDraft({ name: c.name, address: c.address ?? "", phone: c.phone ?? "" });
+    setError(null);
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editing) return;
+    setBusy(true);
+    const { data, error } = await createClient()
+      .from("clinics")
+      .update({
+        name: draft.name.trim(),
+        address: draft.address.trim() || null,
+        phone: draft.phone.trim() || null,
+      })
+      .eq("id", editing.id)
+      .select("id");
+    setBusy(false);
+    if (error || !data?.length) {
+      console.error("clinic update failed", error);
+      setError(t("clinicChangeError"));
+      return;
+    }
+    setEditing(null);
+    router.refresh();
+  }
+
+  async function removeClinic() {
+    if (!deleting) return;
+    setBusy(true);
+    // у врачей этой клиники clinic_id станет null (on delete set null в схеме)
+    const { data, error } = await createClient().from("clinics").delete().eq("id", deleting.id).select("id");
+    setBusy(false);
+    if (error || !data?.length) {
+      console.error("clinic delete failed", error);
+      setError(t("clinicDeleteError"));
+      return;
+    }
+    setDeleting(null);
+    router.refresh();
+  }
 
   async function addClinic(e: React.FormEvent) {
     e.preventDefault();
@@ -155,21 +208,85 @@ export function AdminTabs({
             <Card className="py-8 text-center text-slate-500">{t("noClinics")}</Card>
           ) : (
             <div className="space-y-2">
-              {clinics.map((c) => (
-                <Card key={c.id} className="flex items-center gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
-                    <BuildingIcon className="size-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-slate-900">{c.name}</p>
-                    <p className="truncate text-sm text-slate-500">
-                      {[c.address, c.phone].filter(Boolean).join(" · ")}
-                    </p>
-                  </div>
-                </Card>
-              ))}
+              {clinics.map((c) =>
+                editing?.id === c.id ? (
+                  <Card key={c.id}>
+                    <form onSubmit={saveEdit} className="space-y-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <div>
+                          <Label htmlFor="editClinicName">{t("clinicName")}</Label>
+                          <Input
+                            id="editClinicName"
+                            required
+                            value={draft.name}
+                            onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="editClinicAddress">{t("address")}</Label>
+                          <Input
+                            id="editClinicAddress"
+                            value={draft.address}
+                            onChange={(e) => setDraft((d) => ({ ...d, address: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="editClinicPhone">{t("phone")}</Label>
+                          <Input
+                            id="editClinicPhone"
+                            value={draft.phone}
+                            onChange={(e) => setDraft((d) => ({ ...d, phone: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" loading={busy}>
+                          {tc("save")}
+                        </Button>
+                        <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
+                          {tc("cancel")}
+                        </Button>
+                      </div>
+                    </form>
+                  </Card>
+                ) : (
+                  <Card key={c.id} className="flex items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+                      <BuildingIcon className="size-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words font-medium text-slate-900">{c.name}</p>
+                      <p className="break-words text-sm text-slate-500">
+                        {[c.address, c.phone].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
+                    <Button type="button" variant="ghost" onClick={() => startEdit(c)}>
+                      {t("editClinic")}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleting(c)}
+                      aria-label={`${tc("delete")}: ${c.name}`}
+                      className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted hover:bg-red-50 hover:text-danger"
+                    >
+                      <XIcon className="size-5" />
+                    </button>
+                  </Card>
+                )
+              )}
             </div>
           )}
+
+          <ConfirmDialog
+            open={deleting !== null}
+            title={t("deleteClinicTitle")}
+            description={t("deleteClinicText", { name: deleting?.name ?? "" })}
+            confirmLabel={tc("delete")}
+            danger
+            loading={busy}
+            onConfirm={() => void removeClinic()}
+            onCancel={() => setDeleting(null)}
+          />
         </>
       )}
     </div>

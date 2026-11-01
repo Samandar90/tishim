@@ -26,6 +26,19 @@ const STATUS_STYLE: Record<MappingRequestStatus, string> = {
 
 const STATUSES: MappingRequestStatus[] = ["new", "contacted", "scheduled", "done", "cancelled"];
 
+type Filter = "active" | "new" | "closed" | "all";
+const FILTERS: Filter[] = ["active", "new", "closed", "all"];
+const CLOSED: MappingRequestStatus[] = ["done", "cancelled"];
+// новые — наверх, остальные по свежести
+const ORDER: Record<MappingRequestStatus, number> = { new: 0, contacted: 1, scheduled: 2, done: 3, cancelled: 4 };
+
+function matchesFilter(status: MappingRequestStatus, filter: Filter) {
+  if (filter === "all") return true;
+  if (filter === "new") return status === "new";
+  if (filter === "closed") return CLOSED.includes(status);
+  return !CLOSED.includes(status);
+}
+
 /**
  * Заявки с лендинга — у флагманского врача и у админа. На телефоне лента, с xl —
  * сетка в два столбца: заявка короткая, и во всю ширину экрана имя и статус
@@ -60,6 +73,12 @@ export function RequestsTable({ requests }: { requests: MappingRequest[] }) {
 
   const statusOf = (r: MappingRequest) => optimistic[r.id] ?? r.status;
   const newCount = requests.filter((r) => statusOf(r) === "new").length;
+  const [filter, setFilter] = useState<Filter>("active");
+  // Выполненные и отменённые по умолчанию скрыты, новые — первыми: раньше лента шла
+  // просто по дате, и свежая заявка могла стоять под десятком закрытых.
+  const visible = requests
+    .filter((r) => matchesFilter(statusOf(r), filter))
+    .sort((a, b) => ORDER[statusOf(a)] - ORDER[statusOf(b)] || b.created_at.localeCompare(a.created_at));
 
   async function applyStatus(id: string, status: MappingRequestStatus) {
     setBusyId(id);
@@ -116,8 +135,30 @@ export function RequestsTable({ requests }: { requests: MappingRequest[] }) {
     <div className="space-y-3">
       {newCount > 0 && <Badge tone="danger">{t("newCount", { count: newCount })}</Badge>}
 
+      <div className="flex flex-wrap items-center gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFilter(f)}
+            aria-pressed={filter === f}
+            className={cn(
+              "min-h-touch rounded-xl border px-3 text-small font-medium transition-colors sm:min-h-0 sm:py-1.5",
+              filter === f
+                ? "border-primary-700 bg-primary-700 text-white"
+                : "border-line bg-card text-muted hover:text-ink"
+            )}
+          >
+            {t(`filters.${f}`)}
+            {f === "new" && newCount > 0 && <span className="ml-1.5 tabular-nums">{newCount}</span>}
+          </button>
+        ))}
+      </div>
+
+      {visible.length === 0 && <p className="text-body text-muted">{t("filterEmpty")}</p>}
+
       <ul className="grid gap-2 xl:grid-cols-2 xl:gap-3">
-        {requests.map((r) => {
+        {visible.map((r) => {
           const status = statusOf(r);
           const isClinic = r.comment?.startsWith(CLINIC_REQUEST_TAG) ?? false;
           const comment = isClinic

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { copyText } from "@/lib/clipboard";
 import type { Clinic } from "@/lib/types/database";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
@@ -34,6 +35,12 @@ export function DentistsPanel({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<{ id: string | null; name: string } | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  async function copyRegisterLink() {
+    const url = `${window.location.origin}/register?role=dentist`;
+    setCopied((await copyText(url)) ? t("registerLinkCopied") : null);
+  }
 
   async function assignClinic(dentistId: string, clinicId: string) {
     setBusyId(dentistId);
@@ -83,7 +90,13 @@ export function DentistsPanel({
       </p>
 
       {dentists.length === 0 ? (
-        <Card className="py-8 text-center text-slate-500">{t("noDentists")}</Card>
+        <Card className="space-y-3 py-8 text-center">
+          <p className="text-body font-medium text-ink">{t("noDentists")}</p>
+          <p className="mx-auto max-w-md text-body text-muted">{t("noDentistsHint")}</p>
+          <Button type="button" variant="secondary" onClick={() => void copyRegisterLink()}>
+            {t("copyRegisterLink")}
+          </Button>
+        </Card>
       ) : (
         dentists.map((d) => (
           <Card key={d.id} className="space-y-3">
@@ -101,6 +114,14 @@ export function DentistsPanel({
                     .filter(Boolean)
                     .join(" · ")}
                 </p>
+                {d.profile?.phone && (
+                  <a
+                    href={`tel:${d.profile.phone.replace(/[^\d+]/g, "")}`}
+                    className="inline-flex min-h-touch items-center text-sm font-medium text-primary-700 hover:underline"
+                  >
+                    {d.profile.phone}
+                  </a>
+                )}
               </div>
             </div>
 
@@ -162,6 +183,7 @@ export function DentistsPanel({
       />
 
       <Toast message={error} tone="error" onDismiss={() => setError(null)} />
+      <Toast message={copied} onDismiss={() => setCopied(null)} />
     </div>
   );
 }
