@@ -1,7 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
@@ -9,7 +11,10 @@ import { KeyIcon } from "@/components/icons";
 
 export function AccessCodeCard() {
   const t = useTranslations("access");
+  const router = useRouter();
   const [code, setCode] = useState<string | null>(null);
+  const [issuedAt, setIssuedAt] = useState<string | null>(null);
+  const [grantedTo, setGrantedTo] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -30,7 +35,35 @@ export function AccessCodeCard() {
     return () => clearInterval(id);
   }, [expiresAt]);
 
+  // Пока код жив, раз в три секунды смотрим, не появился ли новый активный доступ:
+  // иначе пациент не знал, принял ли врач код, и диктовал его снова.
+  useEffect(() => {
+    if (!code || !issuedAt) return;
+    const supabase = createClient();
+    const check = async () => {
+      const { data } = await supabase
+        .from("patient_access")
+        .select("granted_at, dentist:dentists(profile:profiles(full_name))")
+        .eq("status", "active")
+        .gte("granted_at", issuedAt)
+        .order("granted_at", { ascending: false })
+        .limit(1);
+      const row = data?.[0] as
+        | { dentist: { profile: { full_name: string } | null } | null }
+        | undefined;
+      if (row) {
+        setGrantedTo(row.dentist?.profile?.full_name ?? "");
+        setCode(null);
+        setExpiresAt(null);
+        router.refresh();
+      }
+    };
+    const id = setInterval(() => void check(), 3000);
+    return () => clearInterval(id);
+  }, [code, issuedAt, router]);
+
   async function generate() {
+    setGrantedTo(null);
     setLoading(true);
     setError(null);
     const supabase = createClient();
@@ -45,6 +78,7 @@ export function AccessCodeCard() {
     const row = data[0] as { code: string; expires_at: string };
     setCode(row.code);
     setExpiresAt(new Date(row.expires_at));
+    setIssuedAt(new Date(Date.now() - 5000).toISOString());
   }
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
@@ -68,6 +102,13 @@ export function AccessCodeCard() {
           </p>
         </div>
       ) : null}
+
+      {grantedTo !== null && (
+        <p className="mb-3 flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5 text-body font-medium text-emerald-800">
+          <Check className="size-4 shrink-0" />
+          {t("granted", { name: grantedTo || "—" })}
+        </p>
+      )}
 
       {error && (
         <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>

@@ -76,7 +76,7 @@ export function ToothDetails({
         </button>
         <div className="min-w-0 flex-1 text-center">
           <p className="text-h2 tabular-nums text-white">{fdi}</p>
-          <p className="truncate text-small text-slate-400">{title(fdi)}</p>
+          <p className="text-small leading-tight text-slate-400">{title(fdi)}</p>
         </div>
         <button type="button" onClick={onNext} aria-label={t("nextTooth")} className={navButton}>
           <ChevronRight className="size-5" />

@@ -57,12 +57,15 @@ export default async function AccessPage() {
         ) : (
           <ul className="divide-y divide-slate-100">
             {rows.map((row) => (
-              <li key={row.id} className="flex items-center gap-3 py-3">
+              <li
+                key={row.id}
+                className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-3"
+              >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-slate-900">
+                  <p className="break-words font-medium text-slate-900">
                     {row.dentist?.profile?.full_name ?? "—"}
                   </p>
-                  <p className="truncate text-sm text-slate-500">
+                  <p className="break-words text-sm text-slate-500">
                     {[row.dentist?.specialization, row.dentist?.clinic?.name]
                       .filter(Boolean)
                       .join(" · ")}
@@ -73,13 +76,15 @@ export default async function AccessPage() {
                     </p>
                   )}
                 </div>
-                <Badge tone={STATUS_TONE[row.status]}>{t(`statuses.${row.status}`)}</Badge>
-                {row.status === "active" && (
-                  <RevokeAccessButton
-                    accessId={row.id}
-                    dentistName={row.dentist?.profile?.full_name ?? "—"}
-                  />
-                )}
+                <div className="flex items-center justify-between gap-3 sm:justify-end">
+                  <Badge tone={STATUS_TONE[row.status]}>{t(`statuses.${row.status}`)}</Badge>
+                  {row.status === "active" && (
+                    <RevokeAccessButton
+                      accessId={row.id}
+                      dentistName={row.dentist?.profile?.full_name ?? "—"}
+                    />
+                  )}
+                </div>
               </li>
             ))}
           </ul>

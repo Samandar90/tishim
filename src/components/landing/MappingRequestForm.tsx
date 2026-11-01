@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import { CLINIC_REQUEST_TAG } from "@/lib/constants/requests";
@@ -17,10 +17,13 @@ export function MappingRequestForm({
   defaultName = "",
   defaultPhone = "",
   showClinicOption = true,
+  persistKey,
 }: {
   defaultName?: string;
   defaultPhone?: string;
   showClinicOption?: boolean;
+  /** Ключ localStorage: с ним «заявка отправлена» переживает перезагрузку и следующий вход. */
+  persistKey?: string;
 }) {
   const t = useTranslations("landing");
   const [name, setName] = useState(defaultName);
@@ -31,6 +34,25 @@ export function MappingRequestForm({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; phone?: string; form?: string }>({});
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    if (!persistKey) return;
+    try {
+      if (localStorage.getItem(persistKey)) setSent(true);
+    } catch {
+      // без storage форма просто не помнит отправку
+    }
+  }, [persistKey]);
+
+  function remember(value: boolean) {
+    if (!persistKey) return;
+    try {
+      if (value) localStorage.setItem(persistKey, new Date().toISOString());
+      else localStorage.removeItem(persistKey);
+    } catch {
+      // см. выше
+    }
+  }
 
   function validate() {
     const next: typeof errors = {};
@@ -70,6 +92,7 @@ export function MappingRequestForm({
       return;
     }
     setSent(true);
+    remember(true);
   }
 
   if (sent) {
@@ -84,6 +107,7 @@ export function MappingRequestForm({
           type="button"
           onClick={() => {
             setSent(false);
+            remember(false);
             setName("");
             setPhone("");
             setDate("");

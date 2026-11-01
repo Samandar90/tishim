@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import type { AiScreening, AiScreeningResult, UrgencyLevel } from "@/lib/types/database";
 import { formatDate } from "@/lib/utils";
+import { downscaleImage } from "@/lib/image";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -71,6 +72,8 @@ export default function AiCheckPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AiScreeningResult | null>(null);
   const [history, setHistory] = useState<AiScreening[]>([]);
@@ -112,14 +115,18 @@ export default function AiCheckPage() {
       if (!user) throw new Error("unauthorized");
 
       const paths: string[] = [];
-      for (const file of files) {
+      for (const [i, original] of files.entries()) {
+        setProgress(t("uploading", { n: i + 1, total: files.length }));
+        // оригинал с телефона — 3–8 МБ; модели хватает 1600px по длинной стороне
+        const file = await downscaleImage(original);
         const path = `${user.id}/${Date.now()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
         const { error: uploadError } = await supabase.storage
           .from("ai-images")
-          .upload(path, file);
+          .upload(path, file, { contentType: file.type });
         if (uploadError) throw uploadError;
         paths.push(path);
       }
+      setProgress(t("analyzing"));
 
       const res = await fetch("/api/ai-screening", {
         method: "POST",
@@ -134,10 +141,13 @@ export default function AiCheckPage() {
       const data = (await res.json()) as { result: AiScreeningResult };
       setResult(data.result);
       setFiles([]);
-    } catch (e) {
+      // результат ниже формы — на телефоне он оказывался за пределами экрана
+      requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    } catch {
       setError(t("error"));
     } finally {
       setAnalyzing(false);
+      setProgress(null);
     }
   }
 
@@ -198,7 +208,7 @@ export default function AiCheckPage() {
           disabled={files.length === 0}
           className="w-full"
         >
-          {analyzing ? t("analyzing") : t("analyze")}
+          {analyzing ? progress ?? t("analyzing") : t("analyze")}
         </Button>
 
         {/* дисклеймер виден до проверки, а не только в результате */}
@@ -208,9 +218,11 @@ export default function AiCheckPage() {
       </Card>
 
       {result && (
-        <Card>
-          <ResultView result={result} />
-        </Card>
+        <div ref={resultRef} className="scroll-mt-20">
+          <Card>
+            <ResultView result={result} />
+          </Card>
+        </div>
       )}
 
       {history.length > 0 && (

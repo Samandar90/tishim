@@ -157,10 +157,10 @@
     "surfaces": {
       "O": "chaynash yuzasi (O)",
       "I": "kesuvchi qirra (I)",
-      "M": "mezial yuza (M)",
-      "D": "distal yuza (D)",
-      "V": "vestibulyar yuza (V)",
-      "L": "til tomoni (L)",
+      "M": "yon, qator markaziga yaqin (M)",
+      "D": "yon, markazdan uzoq (D)",
+      "V": "tashqi, lab yoki lunj tomoni (V)",
+      "L": "ichki, til yoki tanglay tomoni (L)",
       "root": "ildiz"
     },
     "conditions": {
@@ -222,7 +222,13 @@
     "emptyCta": "Raqamlashtirishga yozilish",
     "loadError": "Tishlar xaritasini yuklab bo'lmadi. Aloqani tekshirib, qayta urinib ko'ring.",
     "visitsCount": "Tashriflar",
-    "spentTotal": "{amount} to'langan"
+    "spentTotal": "{amount} to'langan",
+    "nextStepsTitle": "Keyin nima qilish kerak",
+    "nextStep1": "Quyida ariza qoldiring — biz qo'ng'iroq qilib, ko'rik vaqtini kelishamiz.",
+    "nextStep2": "Qabulda «Kirish» bo'limini oching, kod yarating va uni shifokorga ayting.",
+    "nextStep3": "Shifokor 15–20 daqiqada kartani to'ldiradi, va u shu yerda paydo bo'ladi.",
+    "nextStepsAccess": "«Kirish» bo'limini ochish",
+    "partialHint": "{count} ta tashrif qisman to'langan"
   },
   "visits": {
     "title": "Tashriflarim",
@@ -285,7 +291,8 @@
     "revokeConfirmTitle": "Ruxsat bekor qilinsinmi?",
     "revokeConfirmText": "{name} endi kartangizni ocha olmaydi. Ruxsatni qaytarish uchun yangi kod berish kerak bo'ladi.",
     "revokeError": "Ruxsatni bekor qilib bo'lmadi. Qayta urinib ko'ring.",
-    "revoked": "Ruxsat bekor qilindi"
+    "revoked": "Ruxsat bekor qilindi",
+    "granted": "Ruxsat berildi: {name}"
   },
   "aiCheck": {
     "title": "AI tekshiruv",
@@ -309,7 +316,8 @@
     "history": "Oldingi tekshiruvlar",
     "error": "Tekshiruvni bajarib bo'lmadi. Qayta urinib ko'ring.",
     "limit": "Qisqa vaqt ichida juda ko'p tekshiruv. Keyinroq urinib ko'ring.",
-    "noFindings": "Aniq muammoli hududlar topilmadi"
+    "noFindings": "Aniq muammoli hududlar topilmadi",
+    "uploading": "{total} tadan {n}-surat yuklanmoqda…"
   },
   "dentist": {
     "patientsTitle": "Bemorlarim",

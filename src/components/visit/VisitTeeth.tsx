@@ -44,7 +44,7 @@ export function VisitTeeth({ records }: { records: ToothRecord[] }) {
                 <span className="shrink-0 font-medium text-ink">{t("toothN", { n: r.tooth_fdi })}</span>
                 {/* одна строка на запись: хвост обрезается, целиком он — в подсказке */}
                 <span
-                  className="min-w-0 truncate text-muted"
+                  className="min-w-0 break-words text-muted xl:truncate"
                   title={[surfaces, condition, r.procedure].filter(Boolean).join(" · ")}
                 >
                   {surfaces && `${surfaces} `}
