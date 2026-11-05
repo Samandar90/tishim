@@ -55,6 +55,24 @@ const getJson = (p) => new Promise((resolve, reject) => {
       userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36",
     });
   }
+  // LOGIN=email:пароль — сначала вход через форму /login (кабинеты закрыты middleware)
+  if (process.env.LOGIN) {
+    const [email, password] = process.env.LOGIN.split(":");
+    await send("Page.navigate", { url: new URL("/login", url).href });
+    await sleep(8000);
+    const type = async (selector, text) => {
+      await send("Runtime.evaluate", { expression: `document.querySelector(${JSON.stringify(selector)}).focus()` });
+      await send("Input.insertText", { text });
+    };
+    await type("#email", email);
+    await type("#password", password);
+    await send("Runtime.evaluate", { expression: "document.querySelector('form button[type=submit]').click()" });
+    for (let i = 0; i < 60; i++) {
+      await sleep(500);
+      const { result: r } = await send("Runtime.evaluate", { expression: "location.pathname", returnByValue: true });
+      if (r.result.value !== "/login") break;
+    }
+  }
   await send("Page.navigate", { url });
   await sleep(9000);
   // пролистать, чтобы отработали IntersectionObserver (Reveal, ленивая 3D), и вернуться наверх

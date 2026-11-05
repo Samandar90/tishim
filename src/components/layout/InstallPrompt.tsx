@@ -88,20 +88,26 @@ export function InstallPrompt() {
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-3 rounded-2xl border border-primary-100 bg-primary-50 px-4 py-3">
-        <Download className="size-5 shrink-0 text-primary-700" strokeWidth={1.75} />
-        <div className="min-w-0 flex-1">
-          <p className="text-body font-medium text-ink">{t("installTitle")}</p>
-          <p className="text-small text-muted">{t("installText")}</p>
+      {/* На телефоне текст и кнопка в столбик: в одну строку с кнопкой и крестиком тексту
+          оставалось ~120px, и подсказка растягивалась на семь строк */}
+      <div className="relative mb-4 rounded-2xl border border-primary-100 bg-primary-50 p-4 pr-12 sm:flex sm:items-center sm:gap-4">
+        <div className="flex items-start gap-3 sm:min-w-0 sm:flex-1">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-card text-primary-700 shadow-card">
+            <Download className="size-5" strokeWidth={1.75} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-body font-medium text-ink">{t("installTitle")}</p>
+            <p className="text-small text-muted">{t("installText")}</p>
+          </div>
         </div>
-        <Button type="button" onClick={() => void install()}>
+        <Button type="button" block className="mt-3 sm:mt-0 sm:w-auto" onClick={() => void install()}>
           {t("installButton")}
         </Button>
         <button
           type="button"
           onClick={dismiss}
           aria-label={t("later")}
-          className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted hover:bg-primary-100 hover:text-ink"
+          className="absolute right-1.5 top-1.5 flex size-11 items-center justify-center rounded-xl text-muted hover:bg-primary-100 hover:text-ink"
         >
           <X className="size-5" />
         </button>

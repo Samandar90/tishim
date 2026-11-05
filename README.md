@@ -62,6 +62,9 @@ headless-режим Chrome сам по себе не даёт окно уже 50
 node scripts/screenshot.js http://localhost:3000/ shot.png 375
 ```
 
+Кабинет снимается с входом: `LOGIN=patient1@tishim.uz:password123 node scripts/screenshot.js
+http://localhost:3000/dashboard shot.png 375` (сначала форма `/login`, потом нужная страница).
+
 ## Тестовые аккаунты (после seed)
 
 Пароль у всех: `password123`

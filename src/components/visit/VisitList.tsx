@@ -86,7 +86,8 @@ async function VisitCard({ visit, href }: { visit: VisitListRow; href: string })
             </div>
 
             <div className="min-w-0 xl:flex-1">
-              <p className="truncate text-body text-muted">
+              {/* на телефоне врач и клиника в две строки: в одну «Азиз Каримов · Tishim…» обрезалась */}
+              <p className="line-clamp-2 text-body text-muted xl:line-clamp-1">
                 {visit.dentist?.profile?.full_name ?? "—"}
                 {visit.dentist?.clinic?.name ? ` · ${visit.dentist.clinic.name}` : ""}
               </p>

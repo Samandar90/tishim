@@ -5,13 +5,18 @@ import { createClient } from "@/lib/supabase/server";
 import { mustCount } from "@/lib/supabase/result";
 import { getSessionProfile } from "@/lib/auth";
 import { getAppSettings } from "@/lib/settings";
-import { firstName, formatDate, formatMoney } from "@/lib/utils";
+import { cn, firstName, formatDate, formatMoney } from "@/lib/utils";
 import { TeethScene } from "@/components/odontogram/TeethScene";
 import { MappingRequestForm } from "@/components/landing/MappingRequestForm";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 
-/** Компактная карточка статистики: значение крупно, подпись мелко. */
+/**
+ * Ячейка сводки: значение крупно, подпись мелко. Три ячейки живут в одной карточке с
+ * разделителями — три отдельные карточки на телефоне превращались в стопку рамок.
+ */
 function Stat({
   icon: Icon,
   label,
@@ -29,16 +34,19 @@ function Stat({
     tone === "warning" ? "text-amber-700" : tone === "success" ? "text-emerald-700" : "text-ink";
 
   return (
-    <Card className="flex items-start gap-3">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+    <Link
+      href="/visits"
+      className="flex items-start gap-3 p-4 transition-colors first:rounded-t-2xl last:rounded-b-2xl hover:bg-slate-50 sm:first:rounded-l-2xl sm:first:rounded-tr-none sm:last:rounded-r-2xl sm:last:rounded-bl-none"
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
         <Icon className="size-5" strokeWidth={1.75} />
       </span>
-      <div className="min-w-0">
-        <p className="text-small text-muted">{label}</p>
-        <p className={`truncate text-h3 ${valueTone}`}>{value}</p>
-        {hint && <p className="truncate text-small text-muted">{hint}</p>}
-      </div>
-    </Card>
+      <span className="min-w-0">
+        <span className="block text-small text-muted">{label}</span>
+        <span className={cn("block truncate text-h3", valueTone)}>{value}</span>
+        {hint && <span className="block truncate text-small text-muted">{hint}</span>}
+      </span>
+    </Link>
   );
 }
 
@@ -51,6 +59,7 @@ export default async function DashboardPage() {
   const locale = await getLocale();
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
+  const greeting = t("greeting", { name: firstName(profile.full_name) || profile.full_name });
 
   const recordsCount = await mustCount(
     supabase
@@ -71,9 +80,7 @@ export default async function DashboardPage() {
     ];
     return (
       <div className="space-y-6">
-        <h1 className="text-h2 text-ink md:text-h1">
-          {t("greeting", { name: firstName(profile.full_name) || profile.full_name })}
-        </h1>
+        <PageHeader title={greeting} />
         <EmptyState
           icon={ClipboardList}
           title={t("emptyTitle")}
@@ -126,7 +133,10 @@ export default async function DashboardPage() {
       .gte("next_visit_date", today)
       .order("next_visit_date", { ascending: true })
       .limit(1),
-    supabase.from("visits").select("total, payment_status, paid_amount").eq("patient_id", profile.id),
+    supabase
+      .from("visits")
+      .select("visit_date, total, payment_status, paid_amount")
+      .eq("patient_id", profile.id),
   ]);
 
   const nextVisit = upcoming?.[0] as
@@ -141,26 +151,30 @@ export default async function DashboardPage() {
   );
   const spent = rows.reduce((sum, v) => sum + Number(v.paid_amount ?? 0), 0);
   const partialCount = rows.filter((v) => v.payment_status === "partial").length;
+  const lastVisitDate = rows.map((v) => v.visit_date as string).sort().at(-1);
+  const subtitle = nextVisit
+    ? t("nextVisitAt", { date: formatDate(nextVisit.next_visit_date, locale) })
+    : lastVisitDate
+      ? t("lastVisit", { date: formatDate(lastVisitDate, locale) })
+      : undefined;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-h2 text-ink md:text-h1">
-          {t("greeting", { name: firstName(profile.full_name) || profile.full_name })}
-        </h1>
-        <Link
-          href="/visits"
-          className="flex min-h-touch items-center text-body font-medium text-primary-700 hover:text-primary-800"
-        >
-          {t("allVisits")} →
-        </Link>
-      </div>
+      <PageHeader
+        title={greeting}
+        description={subtitle}
+        action={
+          <ButtonLink href="/visits" variant="secondary">
+            <CalendarDays className="size-4" strokeWidth={1.75} />
+            {t("allVisits")}
+          </ButtonLink>
+        }
+      />
 
       {/* карта зубов — главный элемент экрана: на телефоне во всю ширину */}
       <TeethScene patientId={profile.id} />
 
-      {/* компактная строка статистики */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <Card className="grid grid-cols-1 divide-y divide-line p-0 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <Stat
           icon={CalendarDays}
           label={t("nextVisit")}
@@ -180,7 +194,7 @@ export default async function DashboardPage() {
           value={String(rows.length)}
           hint={t("spentTotal", { amount: formatMoney(spent, locale) })}
         />
-      </div>
+      </Card>
     </div>
   );
 }

@@ -4,11 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import type { AiScreening, AiScreeningResult, UrgencyLevel } from "@/lib/types/database";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { downscaleImage } from "@/lib/image";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { CameraIcon, SparklesIcon, XIcon } from "@/components/icons";
 
 const URGENCY_TONE: Record<UrgencyLevel, "success" | "warning" | "danger"> = {
@@ -152,22 +153,14 @@ export default function AiCheckPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="sr-only">{t("title")}</h1>
+    <div className="space-y-5">
+      <PageHeader title={t("title")} description={t("subtitle")} />
       <Card>
-        <div className="mb-4 flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
-            <SparklesIcon className="size-6" />
-          </span>
-          <div>
-            <CardTitle className="mb-0">{t("title")}</CardTitle>
-            <p className="text-sm text-slate-500">{t("subtitle")}</p>
-          </div>
-        </div>
-
-        <div className="mb-3 grid grid-cols-3 gap-2">
+        {/* Без фото — одна широкая зона загрузки; с фото — сетка превью и маленькая плитка
+            «добавить»: квадрат в одну треть ширины на пустом экране терялся */}
+        <div className={cn("mb-3", files.length > 0 && "grid grid-cols-3 gap-2")}>
           {previews.map((src, i) => (
-            <div key={i} className="relative aspect-square overflow-hidden rounded-xl border border-slate-200">
+            <div key={i} className="relative aspect-square overflow-hidden rounded-xl border border-line">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt="" className="size-full object-cover" />
               <button
@@ -181,9 +174,17 @@ export default function AiCheckPage() {
             </div>
           ))}
           {files.length < 3 && (
-            <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 text-slate-400 transition-colors hover:border-primary-400 hover:text-primary-500">
-              <CameraIcon className="size-7" />
-              <span className="text-xs font-medium">{t("upload")}</span>
+            <label
+              className={cn(
+                "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-surface text-muted transition-colors hover:border-primary-400 hover:text-primary-700",
+                files.length > 0 ? "aspect-square rounded-xl gap-1" : "min-h-44 px-6 py-8 text-center"
+              )}
+            >
+              <span className="flex size-12 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
+                <CameraIcon className="size-6" />
+              </span>
+              <span className="text-body font-medium text-ink">{t("upload")}</span>
+              {files.length === 0 && <span className="text-small text-muted">{t("dropHint")}</span>}
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -197,23 +198,25 @@ export default function AiCheckPage() {
             </label>
           )}
         </div>
-        <p className="mb-4 text-xs text-slate-400">{t("uploadHint")}</p>
+        <p className="mb-4 text-small text-muted">{t("uploadHint")}</p>
 
         {error && (
-          <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p className="mb-3 rounded-xl bg-red-50 px-3 py-2.5 text-body text-danger">{error}</p>
         )}
 
         <Button
           onClick={analyze}
           loading={analyzing}
           disabled={files.length === 0}
-          className="w-full"
+          size="lg"
+          block
         >
+          {!analyzing && <SparklesIcon className="size-4" />}
           {analyzing ? progress ?? t("analyzing") : t("analyze")}
         </Button>
 
         {/* дисклеймер виден до проверки, а не только в результате */}
-        <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2.5 text-xs font-medium text-amber-800">
+        <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2.5 text-small font-medium text-amber-800">
           {t("disclaimer")}
         </p>
       </Card>

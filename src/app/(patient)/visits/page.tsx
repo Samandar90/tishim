@@ -5,6 +5,7 @@ import { must } from "@/lib/supabase/result";
 import { getSessionProfile } from "@/lib/auth";
 import { VISIT_LIST_SELECT, VisitList, type VisitListRow } from "@/components/visit/VisitList";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function VisitsPage() {
   const session = await getSessionProfile();
@@ -26,7 +27,10 @@ export default async function VisitsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-h1 text-ink">{t("title")}</h1>
+      <PageHeader
+        title={t("title")}
+        description={rows.length > 0 ? t("countLabel", { count: rows.length }) : undefined}
+      />
 
       {rows.length === 0 ? (
         <EmptyState icon={CalendarDays} title={t("empty")} />

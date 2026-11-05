@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Card, CardTitle } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { KeyIcon } from "@/components/icons";
 
 export function AccessCodeCard() {
@@ -86,18 +86,16 @@ export function AccessCodeCard() {
 
   return (
     <Card>
-      <CardTitle>{t("title")}</CardTitle>
-      <p className="mb-4 text-sm text-slate-500">{t("subtitle")}</p>
-
       {code ? (
-        <div className="mb-4 rounded-xl bg-primary-50 p-5 text-center">
+        <div className="mb-4 rounded-2xl bg-primary-50 p-6 text-center ring-1 ring-inset ring-primary-100">
+          <p className="text-small font-medium text-primary-700">{t("codeLabel")}</p>
           <p
-            className="text-4xl font-bold tracking-[0.35em] text-primary-800"
+            className="mt-1 text-display tabular-nums tracking-[0.3em] text-primary-800"
             aria-live="polite"
           >
             {code}
           </p>
-          <p className="mt-2 text-sm tabular-nums text-primary-700">
+          <p className="mt-1 text-small tabular-nums text-primary-700">
             {mm}:{ss}
           </p>
         </div>
@@ -111,14 +109,20 @@ export function AccessCodeCard() {
       )}
 
       {error && (
-        <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+        <p className="mb-3 rounded-xl bg-red-50 px-3 py-2.5 text-body text-danger">{error}</p>
       )}
 
-      <Button onClick={generate} loading={loading} className="w-full sm:w-auto">
-        <KeyIcon className="size-4" />
-        {t("generate")}
-      </Button>
-      <p className="mt-2 text-xs text-slate-400">{t("codeHint")}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
+            <KeyIcon className="size-5" />
+          </span>
+          <p className="text-body text-muted">{t("codeHint")}</p>
+        </div>
+        <Button onClick={generate} loading={loading} size="lg" className="w-full sm:w-auto">
+          {t("generate")}
+        </Button>
+      </div>
     </Card>
   );
 }
