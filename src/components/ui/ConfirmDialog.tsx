@@ -2,6 +2,8 @@
 
 import { useId } from "react";
 import { useTranslations } from "next-intl";
+import { CircleHelp, TriangleAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "./Button";
 import { useNativeDialog } from "./useNativeDialog";
 
@@ -32,6 +34,7 @@ export function ConfirmDialog({
   const { ref } = useNativeDialog(open);
   const titleId = useId();
   const descId = useId();
+  const Icon = danger ? TriangleAlert : CircleHelp;
 
   return (
     <dialog
@@ -44,16 +47,30 @@ export function ConfirmDialog({
       // и ставит margin-top, отчего центрированный диалог уезжал к верхнему краю
       aria-labelledby={titleId}
       aria-describedby={description ? descId : undefined}
-      className="w-[calc(100vw-2rem)] max-w-md !m-auto rounded-2xl border border-line bg-card p-6 shadow-modal backdrop:bg-slate-900/50"
+      className="w-[calc(100vw-2rem)] max-w-md !m-auto rounded-2xl border border-line bg-card p-6 shadow-modal backdrop:bg-slate-900/50 backdrop:backdrop-blur-sm"
     >
-      <h2 id={titleId} className="text-h3 text-ink">
-        {title}
-      </h2>
-      {description && (
-        <p id={descId} className="mt-2 text-body text-muted">
-          {description}
-        </p>
-      )}
+      <div className="flex items-start gap-4">
+        {/* знак слева: опасное действие читается до текста, не только по красной кнопке */}
+        <span
+          aria-hidden
+          className={cn(
+            "flex size-11 shrink-0 items-center justify-center rounded-xl",
+            danger ? "bg-red-50 text-red-700" : "bg-primary-50 text-primary-700"
+          )}
+        >
+          <Icon className="size-5" strokeWidth={1.75} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id={titleId} className="text-h3 text-ink">
+            {title}
+          </h2>
+          {description && (
+            <p id={descId} className="mt-1.5 text-body text-muted">
+              {description}
+            </p>
+          )}
+        </div>
+      </div>
       <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button variant="secondary" onClick={onCancel} disabled={loading}>
           {t("cancel")}

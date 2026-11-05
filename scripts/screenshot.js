@@ -78,11 +78,18 @@ const getJson = (p) => new Promise((resolve, reject) => {
   // пролистать, чтобы отработали IntersectionObserver (Reveal, ленивая 3D), и вернуться наверх
   await send("Runtime.evaluate", { expression: "(async()=>{for(let y=0;y<document.body.scrollHeight;y+=600){scrollTo(0,y);await new Promise(r=>setTimeout(r,120));}scrollTo(0,0);})()", awaitPromise: true });
   await sleep(1500);
+  // EVAL=<js> — действие перед снимком (открыть шторку, нажать кнопку); снимок тогда в размер
+  // экрана, а не страницы: модальный <dialog> живёт в окне просмотра
+  const modal = Boolean(process.env.EVAL);
+  if (modal) {
+    await send("Runtime.evaluate", { expression: process.env.EVAL, awaitPromise: true });
+    await sleep(1200);
+  }
   const { result } = await send("Runtime.evaluate", { expression: "document.documentElement.scrollHeight", returnByValue: true });
-  const height = Math.min(result.result.value, 16000);
+  const height = modal ? 900 : Math.min(result.result.value, 16000);
   await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 2, mobile });
   await sleep(800);
-  const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true });
+  const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: !modal });
   fs.writeFileSync(out, Buffer.from(shot.result.data, "base64"));
   console.log(`ok ${out} ${width}x${height}`);
   ws.close();

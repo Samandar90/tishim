@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Cake, Phone, X } from "lucide-react";
+import { Cake, Phone } from "lucide-react";
 import type { Profile } from "@/lib/types/database";
 import { formatDate, formatUzPhone } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -49,21 +49,9 @@ export function ProfileSheet({
         {t("profile")}
       </button>
 
-      <Sheet open={open} onClose={() => setOpen(false)} label={t("profile")}>
-        <header className="flex items-center justify-between gap-2">
-          <h2 className="text-h3 text-ink">{t("profile")}</h2>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            aria-label={tc("close")}
-            className="-mr-2 flex size-11 items-center justify-center rounded-xl text-muted transition-colors hover:bg-slate-100 hover:text-ink"
-          >
-            <X className="size-5" />
-          </button>
-        </header>
-
+      <Sheet open={open} onClose={() => setOpen(false)} title={t("profile")}>
         {editing ? (
-          <div className="mt-4">
+          <div>
             <ProfileEditForm
               userId={profile.id}
               initialName={name}
@@ -73,7 +61,7 @@ export function ProfileSheet({
             />
           </div>
         ) : (
-          <div className="mt-3 flex items-start gap-3">
+          <div className="flex items-start gap-3">
             <Avatar name={name} size="lg" />
             <div className="min-w-0 flex-1">
               <p className="break-words text-body font-medium text-ink">{name || "—"}</p>

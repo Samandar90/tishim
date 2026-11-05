@@ -95,12 +95,11 @@ export function VisitEditSheet({ visit }: { visit: EditableVisit }) {
     <>
       <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
         <Pencil className="size-4" />
-        {tc("save") === "" ? null : t("edit")}
+        {t("edit")}
       </Button>
 
-      <Sheet open={open} onClose={() => setOpen(false)} label={t("editTitle")}>
+      <Sheet open={open} onClose={() => setOpen(false)} title={t("editTitle")}>
         <form onSubmit={save} className="space-y-4">
-          <h2 className="text-h3 text-ink">{t("editTitle")}</h2>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
