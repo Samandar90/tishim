@@ -505,23 +505,25 @@ export function NewVisitForm({
 
   // Редактор записи по зубу: на xl живёт в карточке рядом со схемой, ниже — в шторке.
   // Одна разметка для обоих мест, поэтому собирается заранее.
+  // Шапка нужна только карточке на xl: в шторке заголовок и крестик рисует Sheet
+  const editorTitle = editFdi === null ? undefined : `${t("tooth")} ${editFdi}`;
+  const editorHeader =
+    editFdi === null ? null : (
+      <div className="mb-3 flex items-center justify-between">
+        <CardTitle className="mb-0">{editorTitle}</CardTitle>
+        <button
+          type="button"
+          onClick={closeEditor}
+          aria-label={tcommon("close")}
+          className="flex size-9 items-center justify-center rounded-xl text-muted transition-colors hover:bg-slate-100 hover:text-ink"
+        >
+          <XIcon className="size-5" />
+        </button>
+      </div>
+    );
   const editor =
     editFdi === null ? null : (
       <>
-        <div className="mb-3 flex items-center justify-between">
-          <CardTitle className="mb-0">
-            {t("tooth")} {editFdi}
-          </CardTitle>
-          <button
-            type="button"
-            onClick={closeEditor}
-            aria-label={tcommon("close")}
-            className="flex size-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100"
-          >
-            <XIcon className="size-5" />
-          </button>
-        </div>
-
         {/* Enter в любом поле добавляет запись — с клавиатуры за десктопом
             это быстрее, чем тянуться к кнопке */}
         <form
@@ -556,10 +558,10 @@ export function NewVisitForm({
                         )
                       }
                       className={cn(
-                        "min-h-touch min-w-touch rounded-xl border px-3 text-sm font-medium transition-colors",
+                        "min-h-touch min-w-touch rounded-xl border px-3 text-body font-medium transition-colors",
                         editParts.includes(p)
                           ? "border-primary-600 bg-primary-50 text-primary-700"
-                          : "border-slate-200 bg-white text-slate-600"
+                          : "border-line bg-card text-muted hover:border-slate-300 hover:text-ink"
                       )}
                     >
                       {partLabel(p)}
@@ -742,7 +744,7 @@ export function NewVisitForm({
               {items.length === 0 ? (
                 <p className="text-small text-muted">{t("noRecords")}</p>
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-line">
                   {bulkCount > 0 && (
                     <li className="flex items-center gap-3 py-2.5">
                       <span
@@ -750,10 +752,10 @@ export function NewVisitForm({
                         style={{ backgroundColor: CONDITION_COLORS.healthy }}
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-slate-900">
+                        <p className="text-body font-medium text-ink">
                           {t("healthyBulk", { count: bulkCount })}
                         </p>
-                        <p className="truncate text-xs text-slate-500">
+                        <p className="truncate text-small text-muted">
                           {items
                             .filter((i) => i.bulk)
                             .map((i) => i.tooth_fdi)
@@ -763,7 +765,7 @@ export function NewVisitForm({
                       <button
                         type="button"
                         onClick={() => setItems((prev) => prev.filter((i) => !i.bulk))}
-                        className="flex size-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600"
+                        className="flex size-9 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-red-50 hover:text-danger"
                         aria-label={t("healthyBulk", { count: bulkCount })}
                       >
                         <XIcon className="size-4" />
@@ -779,24 +781,24 @@ export function NewVisitForm({
                           style={{ backgroundColor: CONDITION_COLORS[item.condition] }}
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-slate-900">
+                          <p className="text-body font-medium text-ink">
                             {t("tooth")} {item.tooth_fdi}
                             {item.surfaces.length > 0 && (
-                              <span className="text-slate-500"> · {item.surfaces.join(", ")}</span>
+                              <span className="text-muted"> · {item.surfaces.join(", ")}</span>
                             )}{" "}
                             · {tc(item.condition)}
                           </p>
                           {item.procedure && (
-                            <p className="truncate text-xs text-slate-500">{item.procedure}</p>
+                            <p className="truncate text-small text-muted">{item.procedure}</p>
                           )}
                         </div>
-                        <span className="shrink-0 text-sm font-medium tabular-nums text-slate-700">
+                        <span className="shrink-0 text-body font-medium tabular-nums text-ink">
                           {formatMoney(item.price, locale)}
                         </span>
                         <button
                           type="button"
                           onClick={() => removeItem(item.key)}
-                          className="flex size-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600"
+                          className="flex size-9 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-red-50 hover:text-danger"
                           aria-label={t("tooth") + " " + item.tooth_fdi}
                         >
                           <XIcon className="size-4" />
@@ -830,7 +832,7 @@ export function NewVisitForm({
 
               {isMapping && (
                 <div className="mt-3 space-y-2.5 rounded-xl bg-primary-50 p-3">
-                  <p className="text-sm text-primary-800">{t("mappingHint")}</p>
+                  <p className="text-body text-primary-800">{t("mappingHint")}</p>
                   <div className="h-2 overflow-hidden rounded-full bg-white">
                     <div
                       className="h-full rounded-full bg-primary-600 transition-all"
@@ -838,7 +840,7 @@ export function NewVisitForm({
                     />
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-sm font-semibold tabular-nums text-primary-800">
+                    <span className="text-body font-semibold tabular-nums text-primary-800">
                       {t("markedCount", { count: knownTeeth.size, total: ALL_PERMANENT.length })}
                     </span>
                     <Button
@@ -858,13 +860,14 @@ export function NewVisitForm({
 
             {editFdi !== null && wide ? (
               <Card className="order-3 border-primary-200 ring-1 ring-primary-100 xl:order-none">
+                {editorHeader}
                 {editor}
               </Card>
             ) : (
               /* Пустая панель только на широком экране: на телефоне редактор
                  появляется под схемой, и место под него держать незачем */
               <Card className="order-3 hidden flex-col items-center justify-center gap-3 py-12 text-center xl:order-none xl:flex">
-                <MousePointerClick aria-hidden className="size-8 text-slate-400" strokeWidth={1.5} />
+                <MousePointerClick aria-hidden className="size-8 text-muted" strokeWidth={1.5} />
                 <p className="text-body text-muted">{t("noRecords")}</p>
               </Card>
             )}
@@ -874,11 +877,7 @@ export function NewVisitForm({
 
       {/* На телефоне и планшете редактор — шторка: раньше он открывался под схемой, ниже
           экрана, и тап по зубу почти не давал отклика. Та же шторка, что у карты пациента. */}
-      <Sheet
-        open={editFdi !== null && !wide}
-        onClose={closeEditor}
-        label={editFdi !== null ? `${t("tooth")} ${editFdi}` : undefined}
-      >
+      <Sheet open={editFdi !== null && !wide} onClose={closeEditor} title={editorTitle}>
         {editor}
       </Sheet>
 
@@ -945,11 +944,11 @@ export function NewVisitForm({
                 {files.map((f, i) => (
                   <li
                     key={i}
-                    className="flex flex-col gap-1.5 text-xs text-slate-600 sm:flex-row sm:items-center sm:gap-2"
+                    className="flex flex-col gap-1.5 text-small text-muted sm:flex-row sm:items-center sm:gap-2"
                   >
                     <span className="min-w-0 flex-1 truncate">{f.file.name}</span>
                     <Select
-                      className="w-full px-2 text-sm sm:w-32"
+                      className="w-full px-2 sm:w-36"
                       value={f.kind}
                       onChange={(e) =>
                         setFiles((prev) =>
@@ -969,7 +968,7 @@ export function NewVisitForm({
                       type="button"
                       onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
                       aria-label={tcommon("delete")}
-                      className="flex size-9 items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600"
+                      className="flex size-9 items-center justify-center rounded-xl text-muted transition-colors hover:bg-red-50 hover:text-danger"
                     >
                       <XIcon className="size-4" />
                     </button>
