@@ -156,7 +156,9 @@
     "nameRequired": "Familiya va ismni kiriting.",
     "emailInvalid": "Pochta manzilini tekshiring.",
     "phoneInvalid": "To'liq raqamni kiriting: +998 va 9 ta raqam, yoki maydonni bo'sh qoldiring.",
-    "networkError": "Server bilan aloqa yo'q. Internetni tekshirib, qayta urinib ko'ring."
+    "networkError": "Server bilan aloqa yo'q. Internetni tekshirib, qayta urinib ko'ring.",
+    "showPassword": "Parolni ko'rsatish",
+    "hidePassword": "Parolni yashirish"
   },
   "nav": {
     "dashboard": "Karta",

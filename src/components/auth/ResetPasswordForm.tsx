@@ -11,7 +11,8 @@ import {
 } from "@/lib/password";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { Field, Input } from "@/components/ui/Input";
+import { Field } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 type Stage = "checking" | "form" | "expired" | "done";
 
@@ -120,9 +121,8 @@ export function ResetPasswordForm() {
 
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <Field label={t("password")} htmlFor="password" error={error} hint={t("passwordHint")}>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             required
             minLength={MIN_PASSWORD_LENGTH}
             autoComplete="new-password"
@@ -136,9 +136,8 @@ export function ResetPasswordForm() {
         </Field>
 
         <Field label={t("confirmPassword")} htmlFor="confirm">
-          <Input
+          <PasswordInput
             id="confirm"
-            type="password"
             required
             minLength={MIN_PASSWORD_LENGTH}
             autoComplete="new-password"

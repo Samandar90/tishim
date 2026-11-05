@@ -9,6 +9,7 @@ import { isNetworkAuthError } from "@/lib/authErrors";
 import { safeNext } from "@/lib/safeNext";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { AuthScreen } from "@/components/auth/AuthScreen";
 
 export default function LoginPage() {
@@ -61,9 +62,8 @@ export default function LoginPage() {
         </Field>
 
         <Field label={t("password")} htmlFor="password">
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             required
             autoComplete="current-password"
             value={password}

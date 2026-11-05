@@ -12,8 +12,8 @@ import { formatUzPhone } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Field, Input, Label } from "@/components/ui/Input";
-import { Card } from "@/components/ui/Card";
-import { Logo } from "@/components/layout/Logo";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { AuthScreen } from "@/components/auth/AuthScreen";
 import { cn } from "@/lib/utils";
 
 type Role = "patient" | "dentist";
@@ -90,15 +90,15 @@ export default function RegisterPage() {
 
   if (needsConfirm) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <Card className="w-full max-w-md p-6 text-center md:p-7">
+      <AuthScreen>
+        <div className="text-center">
           <h1 className="text-h2 text-ink">{t("confirmTitle")}</h1>
           <p className="mb-6 mt-2 text-body text-muted">{t("confirmText", { email })}</p>
           <ButtonLink href="/login" variant="secondary" block>
             {t("backToLogin")}
           </ButtonLink>
-        </Card>
-      </div>
+        </div>
+      </AuthScreen>
     );
   }
 
@@ -108,137 +108,132 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
-      <Logo className="mb-8" />
+    <AuthScreen>
+    <h1 className="text-h2 text-ink">{t("registerTitle")}</h1>
+      <p className="mb-6 mt-1 text-body text-muted">{t("registerSubtitle")}</p>
 
-      <Card className="w-full max-w-md p-6 md:p-7">
-        <h1 className="text-h2 text-ink">{t("registerTitle")}</h1>
-        <p className="mb-6 mt-1 text-body text-muted">{t("registerSubtitle")}</p>
-
-        <form onSubmit={onSubmit} className="space-y-4" noValidate>
-          {dentistAllowed && (
-          <div>
-            <Label>{t("iAm")}</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {roles.map((r) => (
-                <button
-                  key={r.value}
-                  type="button"
-                  onClick={() => setRole(r.value)}
-                  aria-pressed={role === r.value}
-                  className={cn(
-                    "flex min-h-touch flex-col items-center gap-1.5 rounded-xl border p-3 text-body font-medium transition-colors",
-                    role === r.value
-                      ? "border-primary-600 bg-primary-50 text-primary-700"
-                      : "border-line bg-card text-muted hover:border-slate-300 hover:text-ink"
-                  )}
-                >
-                  <r.icon className="size-5" strokeWidth={1.75} />
-                  {r.label}
-                </button>
-              ))}
-            </div>
+      <form onSubmit={onSubmit} className="space-y-4" noValidate>
+        {dentistAllowed && (
+        <div>
+          <Label>{t("iAm")}</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {roles.map((r) => (
+              <button
+                key={r.value}
+                type="button"
+                onClick={() => setRole(r.value)}
+                aria-pressed={role === r.value}
+                className={cn(
+                  "flex min-h-touch flex-col items-center gap-1.5 rounded-xl border p-3 text-body font-medium transition-colors",
+                  role === r.value
+                    ? "border-primary-600 bg-primary-50 text-primary-700"
+                    : "border-line bg-card text-muted hover:border-slate-300 hover:text-ink"
+                )}
+              >
+                <r.icon className="size-5" strokeWidth={1.75} />
+                {r.label}
+              </button>
+            ))}
           </div>
-          )}
+        </div>
+        )}
 
-          <Field label={t("fullName")} htmlFor="fullName" error={errors.name}>
-            <Input
-              id="fullName"
-              required
-              minLength={2}
-              autoComplete="name"
-              value={fullName}
-              error={errors.name}
-              onChange={(e) => {
-                setFullName(e.target.value);
-                if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
-              }}
-              placeholder={t("fullNamePlaceholder")}
-            />
-          </Field>
+        <Field label={t("fullName")} htmlFor="fullName" error={errors.name}>
+          <Input
+            id="fullName"
+            required
+            minLength={2}
+            autoComplete="name"
+            value={fullName}
+            error={errors.name}
+            onChange={(e) => {
+              setFullName(e.target.value);
+              if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
+            }}
+            placeholder={t("fullNamePlaceholder")}
+          />
+        </Field>
 
-          <Field label={t("phone")} htmlFor="phone" error={errors.phone}>
-            <Input
-              id="phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              value={phone}
-              error={errors.phone}
-              onFocus={() => {
-                if (!phone) setPhone("+998 ");
-              }}
-              onChange={(e) => {
-                setPhone(formatUzPhone(e.target.value));
-                if (errors.phone) setErrors((p) => ({ ...p, phone: undefined }));
-              }}
-              placeholder="+998 90 123 45 67"
-            />
-          </Field>
+        <Field label={t("phone")} htmlFor="phone" error={errors.phone}>
+          <Input
+            id="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            error={errors.phone}
+            onFocus={() => {
+              if (!phone) setPhone("+998 ");
+            }}
+            onChange={(e) => {
+              setPhone(formatUzPhone(e.target.value));
+              if (errors.phone) setErrors((p) => ({ ...p, phone: undefined }));
+            }}
+            placeholder="+998 90 123 45 67"
+          />
+        </Field>
 
-          <Field label={t("email")} htmlFor="email" error={errors.email}>
-            <Input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              error={errors.email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
-              }}
-              placeholder="name@example.com"
-            />
-          </Field>
+        <Field label={t("email")} htmlFor="email" error={errors.email}>
+          <Input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            error={errors.email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
+            }}
+            placeholder="name@example.com"
+          />
+        </Field>
 
-          <Field
-            label={t("password")}
-            htmlFor="password"
+        <Field
+          label={t("password")}
+          htmlFor="password"
+          error={errors.password}
+          hint={t("passwordHint")}
+        >
+          <PasswordInput
+            id="password"
+            required
+            minLength={MIN_PASSWORD_LENGTH}
+            autoComplete="new-password"
+            value={password}
             error={errors.password}
-            hint={t("passwordHint")}
-          >
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              value={password}
-              error={errors.password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (errors.password) setErrors((p) => ({ ...p, password: undefined }));
-              }}
-            />
-          </Field>
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (errors.password) setErrors((p) => ({ ...p, password: undefined }));
+            }}
+          />
+        </Field>
 
-          {errors.form && (
-            <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-body text-danger">{errors.form}</p>
-          )}
+        {errors.form && (
+          <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-body text-danger">{errors.form}</p>
+        )}
 
-          <Button type="submit" size="lg" block loading={loading}>
-            {t("registerButton")}
-          </Button>
+        <Button type="submit" size="lg" block loading={loading}>
+          {t("registerButton")}
+        </Button>
 
-          <p className="text-center text-small text-muted">
-            {t("consentPrefix")}{" "}
-            <Link href="/privacy" className="font-medium text-primary-700 underline-offset-2 hover:underline">
-              {t("privacyLink")}
-            </Link>
-          </p>
-        </form>
-
-        <p className="mt-6 text-center text-body text-muted">
-          {t("haveAccount")}{" "}
-          <Link
-            href="/login"
-            className="inline-flex min-h-touch items-center px-1.5 font-medium text-primary-700 hover:text-primary-800"
-          >
-            {t("loginLink")}
+        <p className="text-center text-small text-muted">
+          {t("consentPrefix")}{" "}
+          <Link href="/privacy" className="font-medium text-primary-700 underline-offset-2 hover:underline">
+            {t("privacyLink")}
           </Link>
         </p>
-      </Card>
-    </div>
+      </form>
+
+      <p className="mt-6 text-center text-body text-muted">
+        {t("haveAccount")}{" "}
+        <Link
+          href="/login"
+          className="inline-flex min-h-touch items-center px-1.5 font-medium text-primary-700 hover:text-primary-800"
+        >
+          {t("loginLink")}
+        </Link>
+      </p>
+    </AuthScreen>
   );
 }
