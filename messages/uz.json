@@ -352,6 +352,8 @@
   },
   "dentist": {
     "patientsTitle": "Bemorlarim",
+    "patientsCount": "{count, plural, other {# ta bemor kirish huquqi bilan}}",
+    "enterCode": "Bemor kodini kiritish",
     "searchPlaceholder": "Ism yoki telefon bo'yicha qidirish",
     "empty": "Hozircha bemorlar yo'q",
     "emptyHint": "Bemordan kirish kodini yaratishni so'rang va uni «Kirish kodi» bo'limida kiriting.",
@@ -362,6 +364,7 @@
     "accessTitle": "Bemorning kirish kodi",
     "accessSubtitle": "Bemor o'z ilovasida yaratgan 6 xonali kodni kiriting.",
     "submitCode": "Ruxsat olish",
+    "accessHint": "Kod 15 daqiqa amal qiladi. Besh marta noto'g'ri kiritilsa, kiritish 15 daqiqaga bloklanadi.",
     "codeSuccess": "Ruxsat olindi! Bemor kartasi ochilmoqda…",
     "codeError": "Kod noto'g'ri yoki muddati o'tgan",
     "codeLocked": "Juda ko'p noto'g'ri urinish. 15 daqiqadan so'ng qayta urinib ko'ring.",
@@ -526,6 +529,7 @@
   },
   "requests": {
     "title": "Raqamlashtirish arizalari",
+    "subtitle": "Sayt orqali kelgan arizalar: qo'ng'iroq qiling, vaqtni kelishing va holatini belgilang",
     "empty": "Hozircha arizalar yo'q",
     "newCount": "Yangi: {count}",
     "preferredDate": "Qulay sana",

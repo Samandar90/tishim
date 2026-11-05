@@ -1,8 +1,9 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import type { Profile } from "@/lib/types/database";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatUzPhone } from "@/lib/utils";
 import { VisitList, type VisitListRow } from "@/components/visit/VisitList";
 import { Avatar } from "@/components/ui/Avatar";
+import { BackLink } from "@/components/ui/BackLink";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { PlusIcon } from "@/components/icons";
@@ -23,10 +24,11 @@ export async function PatientRecordView({
 }) {
   const t = await getTranslations("dentist");
   const tv = await getTranslations("visits");
+  const tc = await getTranslations("common");
   const locale = await getLocale();
 
   const about = [
-    patient.phone,
+    patient.phone ? formatUzPhone(patient.phone) : null,
     patient.birth_date ? `${formatDate(patient.birth_date, locale)} ${t("born")}` : null,
   ]
     .filter(Boolean)
@@ -34,11 +36,14 @@ export async function PatientRecordView({
 
   return (
     <div className="space-y-4">
-      <Card className="flex flex-wrap items-center gap-x-4 gap-y-3">
+      {/* «Назад» — к списку пациентов, как в деталях визита; раньше с карты можно было
+          уйти только нижним меню */}
+      <Card className="flex flex-wrap items-center gap-x-3 gap-y-3 sm:gap-x-4">
+        <BackLink href="/dentist" label={tc("back")} />
         <Avatar name={patient.full_name} size="lg" />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-h3 text-ink md:text-h2">{patient.full_name}</h1>
-          {about && <p className="truncate text-small text-muted">{about}</p>}
+          {about && <p className="break-words text-small text-muted">{about}</p>}
         </div>
         {/* На телефоне кнопка — своей строкой во всю ширину: рядом с ней от имени
             пациента оставался обрубок в несколько букв */}

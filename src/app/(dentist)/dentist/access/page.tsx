@@ -5,7 +5,8 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
-import { Card, CardTitle } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { KeyIcon } from "@/components/icons";
 
 export default function DentistAccessPage() {
@@ -67,19 +68,10 @@ export default function DentistAccessPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-4">
-      <Card>
-        <div className="mb-4 flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
-            <KeyIcon className="size-6" />
-          </span>
-          <div>
-            <CardTitle className="mb-0">{t("accessTitle")}</CardTitle>
-            <p className="text-sm text-slate-500">{t("accessSubtitle")}</p>
-          </div>
-        </div>
-
-        <form onSubmit={submit} className="space-y-4">
+    <div className="space-y-5">
+      <PageHeader title={t("accessTitle")} description={t("accessSubtitle")} />
+      <Card className="max-w-md p-5 md:p-6">
+        <form onSubmit={submit} className="space-y-5">
           <div className="flex justify-center gap-2" dir="ltr">
             {digits.map((d, i) => (
               <input
@@ -93,31 +85,35 @@ export default function DentistAccessPage() {
                 inputMode="numeric"
                 autoComplete={i === 0 ? "one-time-code" : "off"}
                 maxLength={6}
-                className="h-14 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white text-center text-2xl font-bold text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                // те же рамка и кольцо фокуса, что у ui/Input: раньше поле было бледнее и фокус терялся
+                className="h-14 min-w-0 flex-1 rounded-xl border border-slate-300 bg-card text-center text-h2 tabular-nums text-ink transition-colors hover:border-slate-400 focus:border-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-700"
                 aria-label={t("codeDigit", { n: i + 1 })}
               />
             ))}
           </div>
 
           {error && (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-center text-sm text-red-700">
+            <p className="rounded-xl bg-red-50 px-3 py-2.5 text-center text-body text-danger">
               {error}
             </p>
           )}
           {success && (
-            <p className="rounded-xl bg-emerald-50 px-3 py-2 text-center text-sm text-emerald-700">
+            <p className="rounded-xl bg-emerald-50 px-3 py-2.5 text-center text-body text-emerald-800">
               {t("codeSuccess")}
             </p>
           )}
 
           <Button
             type="submit"
-            className="w-full"
+            size="lg"
+            block
             loading={loading}
             disabled={digits.join("").length !== 6}
           >
+            <KeyIcon className="size-4" />
             {t("submitCode")}
           </Button>
+          <p className="text-center text-small text-muted">{t("accessHint")}</p>
         </form>
       </Card>
     </div>

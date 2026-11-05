@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import type { MappingRequest } from "@/lib/types/database";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { RequestsTable } from "./RequestsTable";
 
 /**
@@ -25,7 +26,7 @@ export async function RequestsView({ requests }: { requests: MappingRequest[] })
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h2 text-ink md:text-h1">{t("title")}</h1>
+      <PageHeader title={t("title")} description={t("subtitle")} />
       <RequestsTable requests={requests} />
     </div>
   );

@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
+import { KeyRound } from "lucide-react";
 import type { Clinic } from "@/lib/types/database";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { DentistProfileSetup, type DentistProfileInitial } from "./DentistProfileSetup";
 import { PatientList, type PatientRow } from "./PatientList";
 
@@ -24,7 +27,17 @@ export async function DentistHomeView({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h2 text-ink md:text-h1">{t("patientsTitle")}</h1>
+      <PageHeader
+        title={t("patientsTitle")}
+        description={patients.length > 0 ? t("patientsCount", { count: patients.length }) : undefined}
+        action={
+          // Новый пациент появляется только через код: кнопка ведёт туда прямо с главной
+          <ButtonLink href="/dentist/access" variant="secondary">
+            <KeyRound className="size-4" strokeWidth={1.75} />
+            {t("enterCode")}
+          </ButtonLink>
+        }
+      />
       <DentistProfileSetup dentistId={dentistId} userId={userId} clinics={clinics} initial={profile} />
       <PatientList patients={patients} />
     </div>

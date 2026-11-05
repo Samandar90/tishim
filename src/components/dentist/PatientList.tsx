@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight, Search, SearchX, Users } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatUzPhone } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -85,7 +85,10 @@ export function PatientList({ patients }: { patients: PatientRow[] }) {
                       {p.fullName}
                     </p>
                     <p className="truncate text-small text-muted">
-                      {[p.phone, p.birthDate ? `${formatDate(p.birthDate, locale)} ${t("born")}` : null]
+                      {[
+                        p.phone ? formatUzPhone(p.phone) : null,
+                        p.birthDate ? `${formatDate(p.birthDate, locale)} ${t("born")}` : null,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
