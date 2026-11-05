@@ -2,9 +2,11 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { must } from "@/lib/supabase/result";
 import { DentistsPanel, type AdminDentistRow } from "@/components/admin/DentistsPanel";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function AdminDentistsPage() {
   const t = await getTranslations("nav");
+  const ta = await getTranslations("admin");
   const supabase = await createClient();
 
   const [dentists, clinics] = await Promise.all([
@@ -22,7 +24,7 @@ export default async function AdminDentistsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h2 text-ink md:text-h1">{t("dentists")}</h1>
+      <PageHeader title={t("dentists")} description={ta("featuredHint")} />
       <DentistsPanel
         dentists={dentists as unknown as AdminDentistRow[]}
         clinics={clinics}

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatUzPhone } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
-import { Card, CardTitle } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 
 export function SettingsForm({
   initialPrice,
@@ -64,9 +64,8 @@ export function SettingsForm({
   }
 
   return (
-    <Card>
-      <CardTitle>{t("settingsTitle")}</CardTitle>
-      <form onSubmit={save} className="space-y-3">
+    <Card className="p-5 md:p-6">
+      <form onSubmit={save} className="space-y-4">
         <Field label={t("mappingPrice")} htmlFor="mappingPrice" hint={t("mappingPriceHint")}>
           <Input
             id="mappingPrice"
@@ -99,9 +98,9 @@ export function SettingsForm({
           />
         </Field>
 
-        {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p className="rounded-xl bg-red-50 px-3 py-2.5 text-body text-danger">{error}</p>}
         {saved && (
-          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="rounded-xl bg-emerald-50 px-3 py-2.5 text-body text-emerald-800">
             {t("settingsSaved")}
           </p>
         )}

@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { copyText } from "@/lib/clipboard";
 import type { Clinic } from "@/lib/types/database";
+import { formatUzPhone } from "@/lib/utils";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -85,10 +87,6 @@ export function DentistsPanel({
 
   return (
     <div className="space-y-3">
-      <p className="rounded-xl bg-primary-50 px-3 py-2.5 text-sm text-primary-800">
-        {t("featuredHint")}
-      </p>
-
       {dentists.length === 0 ? (
         <Card className="space-y-3 py-8 text-center">
           <p className="text-body font-medium text-ink">{t("noDentists")}</p>
@@ -101,15 +99,13 @@ export function DentistsPanel({
         dentists.map((d) => (
           <Card key={d.id} className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-100 font-semibold text-primary-700">
-                {(d.profile?.full_name ?? "?").charAt(0).toUpperCase()}
-              </span>
+              <Avatar name={d.profile?.full_name ?? ""} size="md" />
               <div className="min-w-0 flex-1">
-                <p className="flex flex-wrap items-center gap-2 font-medium text-slate-900">
+                <p className="flex flex-wrap items-center gap-2 text-body font-medium text-ink">
                   <span className="truncate">{d.profile?.full_name ?? "—"}</span>
                   {d.is_featured && <Badge tone="primary">{t("featuredBadge")}</Badge>}
                 </p>
-                <p className="truncate text-sm text-slate-500">
+                <p className="truncate text-small text-muted">
                   {[d.specialization, d.license_number && `${t("license")}: ${d.license_number}`]
                     .filter(Boolean)
                     .join(" · ")}
@@ -117,9 +113,9 @@ export function DentistsPanel({
                 {d.profile?.phone && (
                   <a
                     href={`tel:${d.profile.phone.replace(/[^\d+]/g, "")}`}
-                    className="inline-flex min-h-touch items-center text-sm font-medium text-primary-700 hover:underline"
+                    className="inline-flex min-h-touch items-center text-small font-medium text-primary-700 hover:underline"
                   >
-                    {d.profile.phone}
+                    {formatUzPhone(d.profile.phone)}
                   </a>
                 )}
               </div>
@@ -127,7 +123,7 @@ export function DentistsPanel({
 
             <div className="flex flex-wrap items-center gap-2">
               <Select
-                className="w-full text-sm sm:w-44"
+                className="w-full sm:w-48"
                 value={d.clinic_id ?? ""}
                 disabled={busyId === d.id}
                 onChange={(e) => assignClinic(d.id, e.target.value)}

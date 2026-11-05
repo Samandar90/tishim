@@ -5,6 +5,7 @@ import { getAppSettings } from "@/lib/settings";
 import type { Clinic } from "@/lib/types/database";
 import { AdminTabs, type AdminStats } from "@/components/admin/AdminTabs";
 import { LaunchChecklist } from "@/components/admin/LaunchChecklist";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function AdminPage() {
   const t = await getTranslations("admin");
@@ -20,7 +21,7 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h2 text-ink md:text-h1">{t("title")}</h1>
+      <PageHeader title={t("title")} description={t("homeSubtitle")} />
       {/* Пустая база давала восемь нулей без подсказки, что делать: чек-лист ведёт к экранам, где это чинится */}
       <LaunchChecklist
         featured={featured > 0}

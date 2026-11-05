@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import type { Clinic } from "@/lib/types/database";
-import { cn, formatMoney } from "@/lib/utils";
+import { cn, formatMoney, formatUzPhone } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { Card, CardTitle } from "@/components/ui/Card";
@@ -133,15 +133,18 @@ export function AdminTabs({
 
   return (
     <div className="space-y-4">
-      <div className="flex rounded-xl border border-slate-200 bg-white p-0.5">
+      {/* Сегментный переключатель — как у языка и вида челюсти; на телефоне во всю ширину */}
+      <div className="flex rounded-xl border border-line bg-card p-0.5 sm:inline-flex" role="tablist">
         {(["stats", "clinics"] as const).map((value) => (
           <button
             key={value}
             type="button"
+            role="tab"
+            aria-selected={tab === value}
             onClick={() => setTab(value)}
             className={cn(
-              "min-h-touch flex-1 rounded-[10px] px-3 text-sm font-medium transition-colors sm:min-h-0 sm:py-2",
-              tab === value ? "bg-primary-700 text-white" : "text-slate-500 hover:text-slate-800"
+              "min-h-touch flex-1 rounded-lg px-4 text-body font-medium transition-colors sm:min-h-0 sm:flex-none sm:py-1.5 sm:text-small",
+              tab === value ? "bg-primary-700 text-white" : "text-muted hover:text-ink"
             )}
           >
             {t(`tabs.${value}`)}
@@ -150,16 +153,16 @@ export function AdminTabs({
       </div>
 
       {tab === "stats" && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        // Одна карточка с сеткой ячеек, как сводка у пациента: восемь отдельных рамок
+        // на телефоне превращались в стопку
+        <Card flush className="grid grid-cols-2 gap-px overflow-hidden bg-line sm:grid-cols-4">
           {statCards.map(([label, value]) => (
-            <Card key={label} className="text-center">
-              <p className="break-words text-base font-bold tabular-nums text-slate-900 sm:text-xl">
-                {value}
-              </p>
-              <p className="mt-0.5 text-xs text-slate-500">{label}</p>
-            </Card>
+            <div key={label} className="bg-card p-4">
+              <p className="text-small text-muted">{label}</p>
+              <p className="mt-1 text-h3 tabular-nums text-ink">{value}</p>
+            </div>
           ))}
-        </div>
+        </Card>
       )}
 
       {tab === "clinics" && (
@@ -195,7 +198,7 @@ export function AdminTabs({
                 </div>
               </div>
               {error && (
-                <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+                <p className="rounded-xl bg-red-50 px-3 py-2.5 text-body text-danger">{error}</p>
               )}
               <Button type="submit" loading={savingClinic}>
                 <PlusIcon className="size-4" />
@@ -205,7 +208,7 @@ export function AdminTabs({
           </Card>
 
           {clinics.length === 0 ? (
-            <Card className="py-8 text-center text-slate-500">{t("noClinics")}</Card>
+            <Card className="py-8 text-center text-body text-muted">{t("noClinics")}</Card>
           ) : (
             <div className="space-y-2">
               {clinics.map((c) =>
@@ -250,27 +253,31 @@ export function AdminTabs({
                     </form>
                   </Card>
                 ) : (
-                  <Card key={c.id} className="flex items-center gap-3">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+                  // На телефоне кнопки своей строкой: рядом с ними название клиники
+                  // переносилось по одному слову
+                  <Card key={c.id} className="flex flex-wrap items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
                       <BuildingIcon className="size-5" />
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="break-words font-medium text-slate-900">{c.name}</p>
-                      <p className="break-words text-sm text-slate-500">
-                        {[c.address, c.phone].filter(Boolean).join(" · ")}
+                    <div className="min-w-0 flex-1 basis-48">
+                      <p className="break-words text-body font-medium text-ink">{c.name}</p>
+                      <p className="break-words text-small text-muted">
+                        {[c.address, c.phone ? formatUzPhone(c.phone) : null].filter(Boolean).join(" · ")}
                       </p>
                     </div>
-                    <Button type="button" variant="ghost" onClick={() => startEdit(c)}>
-                      {t("editClinic")}
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleting(c)}
-                      aria-label={`${tc("delete")}: ${c.name}`}
-                      className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted hover:bg-red-50 hover:text-danger"
-                    >
-                      <XIcon className="size-5" />
-                    </button>
+                    <div className="flex w-full items-center justify-end gap-1 sm:w-auto">
+                      <Button type="button" variant="ghost" onClick={() => startEdit(c)}>
+                        {t("editClinic")}
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleting(c)}
+                        aria-label={`${tc("delete")}: ${c.name}`}
+                        className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted hover:bg-red-50 hover:text-danger"
+                      >
+                        <XIcon className="size-5" />
+                      </button>
+                    </div>
                   </Card>
                 )
               )}

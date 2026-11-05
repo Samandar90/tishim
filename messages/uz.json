@@ -463,6 +463,7 @@
   },
   "admin": {
     "title": "Boshqaruv",
+    "homeSubtitle": "Ishga tushirishga tayyorlik, statistika va klinikalar",
     "tabs": {
       "stats": "Statistika",
       "clinics": "Klinikalar",
@@ -494,6 +495,7 @@
     "removeFeatured": "Flagmanlikdan olish",
     "featuredHint": "Flagman shifokor lendingda ko'rsatiladi va raqamlashtirish arizalarini oladi. Faqat bittasi faol bo'lishi mumkin.",
     "settingsTitle": "Sozlamalar",
+    "settingsSubtitle": "Bemorlar saytda va kabinetda ko'radigan narx va telefon",
     "mappingPrice": "Birlamchi raqamlashtirish narxi, so'm",
     "contactPhone": "Aloqa telefoni",
     "settingsSaved": "Sozlamalar saqlandi",

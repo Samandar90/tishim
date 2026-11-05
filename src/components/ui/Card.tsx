@@ -5,17 +5,22 @@ export function Card({
   children,
   as: Tag = "div",
   interactive,
+  flush,
 }: {
   className?: string;
   children: React.ReactNode;
   as?: "div" | "section" | "article" | "li";
   /** Подсветка тени при наведении — для кликабельных карточек. */
   interactive?: boolean;
+  /** Без внутренних отступов — для карточек из ячеек с разделителями. cn классы не
+      сливает, и `p-0` в className не перебивает `p-4`. */
+  flush?: boolean;
 }) {
   return (
     <Tag
       className={cn(
-        "rounded-2xl border border-line bg-card p-4 shadow-card",
+        "rounded-2xl border border-line bg-card shadow-card",
+        !flush && "p-4",
         interactive && "transition-shadow duration-200 hover:shadow-card-hover",
         className
       )}

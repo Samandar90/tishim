@@ -174,7 +174,7 @@ export default async function DashboardPage() {
       {/* карта зубов — главный элемент экрана: на телефоне во всю ширину */}
       <TeethScene patientId={profile.id} />
 
-      <Card className="grid grid-cols-1 divide-y divide-line p-0 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <Card flush className="grid grid-cols-1 divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <Stat
           icon={CalendarDays}
           label={t("nextVisit")}
