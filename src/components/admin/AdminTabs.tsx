@@ -159,7 +159,11 @@ export function AdminTabs({
           {statCards.map(([label, value]) => (
             <div key={label} className="bg-card p-4">
               <p className="text-small text-muted">{label}</p>
-              <p className="mt-1 text-h3 tabular-nums text-ink">{value}</p>
+              {/* nowrap и кегль поменьше на телефоне: «2 155 000 soʻm» в ячейке 138px рвалось
+                  по валюте — браузер переносит строку и после апострофа, и после U+02BB */}
+              <p className="mt-1 whitespace-nowrap text-body font-semibold tabular-nums text-ink sm:text-h3">
+                {value}
+              </p>
             </div>
           ))}
         </Card>

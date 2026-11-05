@@ -74,6 +74,7 @@ describe("formatMoney", () => {
 
   it("разряды разделяются неразрывным пробелом, валюта по локали", () => {
     expect(formatMoney(150000, "ru")).toBe(`150${NBSP}000${NBSP}сум`);
-    expect(formatMoney(150000, "uz")).toBe(`150${NBSP}000${NBSP}so'm`);
+    // soʻm через U+02BB: после ASCII-апострофа браузер переносит строку, и «so' / m» рвалось в узких ячейках
+    expect(formatMoney(150000, "uz")).toBe(`150${NBSP}000${NBSP}soʻm`);
   });
 });

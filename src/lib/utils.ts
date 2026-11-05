@@ -15,7 +15,7 @@ export function formatMoney(value: number | null | undefined, locale: string = "
   const grouped = Math.abs(n)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, NBSP);
-  return `${sign}${grouped}${NBSP}${locale === "uz" ? "so'm" : "сум"}`;
+  return `${sign}${grouped}${NBSP}${locale === "uz" ? "soʻm" : "сум"}`;
 }
 
 /** Дата всегда ДД.ММ.ГГГГ — одинаково в обеих локалях и на сервере, и в браузере. */

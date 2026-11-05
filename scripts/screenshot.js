@@ -1,7 +1,7 @@
 // Полностраничный скриншот страницы через DevTools Protocol с эмуляцией телефона.
 // Нужен для визуальных проверок: обычный headless-скриншот Chrome не даёт окно уже 500px,
 // а сайт запрещает встраивание в iframe. Требует Chrome и Node ≥ 22 (глобальный WebSocket).
-//   node scripts/screenshot.js <url> <out.png> [width=375] [mobile=1]
+//   [LOGIN=email:пароль] [LOCALE=uz] [EVAL=<js>] node scripts/screenshot.js <url> <out.png> [width=375] [mobile=1]
 // Путь к Chrome берётся из переменной CHROME, иначе стандартный.
 const { spawn } = require("child_process");
 const fs = require("fs");
@@ -54,6 +54,10 @@ const getJson = (p) => new Promise((resolve, reject) => {
     await send("Emulation.setUserAgentOverride", {
       userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36",
     });
+  }
+  // LOCALE=uz — язык интерфейса: он живёт в cookie, префикса в адресе нет
+  if (process.env.LOCALE) {
+    await send("Network.setCookie", { name: "locale", value: process.env.LOCALE, url: new URL(url).origin });
   }
   // LOGIN=email:пароль — сначала вход через форму /login (кабинеты закрыты middleware)
   if (process.env.LOGIN) {
