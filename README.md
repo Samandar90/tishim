@@ -55,6 +55,13 @@ npm install
 npm run dev
 ```
 
+Полностраничный скриншот любой страницы в размере телефона (для проверки вёрстки «было/стало»;
+headless-режим Chrome сам по себе не даёт окно уже 500px, а сайт запрещает iframe):
+
+```bash
+node scripts/screenshot.js http://localhost:3000/ shot.png 375
+```
+
 ## Тестовые аккаунты (после seed)
 
 Пароль у всех: `password123`

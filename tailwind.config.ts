@@ -42,6 +42,18 @@ const config: Config = {
         h3: ["18px", { lineHeight: "28px", fontWeight: "600" }],
         body: ["15px", { lineHeight: "24px" }],
         small: ["13px", { lineHeight: "20px" }],
+        // Лендинг: заголовки крупнее шкалы кабинетов и растут вместе с экраном —
+        // h1/h2 кабинета на первом экране сайта выглядят как подписи к карточкам
+        display: [
+          "clamp(2.25rem, 1.5rem + 3.2vw, 3.5rem)",
+          { lineHeight: "1.08", fontWeight: "600", letterSpacing: "-0.02em" },
+        ],
+        title: [
+          "clamp(1.75rem, 1.35rem + 1.5vw, 2.5rem)",
+          { lineHeight: "1.15", fontWeight: "600", letterSpacing: "-0.015em" },
+        ],
+        lede: ["17px", { lineHeight: "28px" }],
+        eyebrow: ["12px", { lineHeight: "16px", fontWeight: "600", letterSpacing: "0.08em" }],
       },
       borderRadius: {
         // кнопки и инпуты 12px, карточки 16px
@@ -53,6 +65,8 @@ const config: Config = {
         card: "0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)",
         "card-hover": "0 2px 4px -1px rgb(15 23 42 / 0.06), 0 4px 12px -2px rgb(15 23 42 / 0.08)",
         modal: "0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1)",
+        // Рамка 3D-сцены на тёмном фоне лендинга: тонкий светлый кант и бирюзовый отсвет снизу
+        glow: "0 0 0 1px rgb(255 255 255 / 0.08), 0 24px 60px -24px rgb(6 182 212 / 0.45)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

@@ -54,7 +54,7 @@ export function DemoJaw() {
     <div className="space-y-3">
       <div
         ref={stageRef}
-        className="relative h-80 overflow-hidden rounded-2xl border border-white/10 bg-white/5 lg:h-stage-hero"
+        className="relative h-80 overflow-hidden rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] shadow-glow lg:h-stage-hero"
       >
         {/* без JS и до загрузки three здесь знак, а не пустая коробка */}
         {!ready && (
